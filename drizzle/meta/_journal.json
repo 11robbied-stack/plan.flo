@@ -15,6 +15,13 @@
       "when": 1790374857516,
       "tag": "0001_hesitant_betty_brant",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790376306765,
+      "tag": "0002_strange_ego",
+      "breakpoints": true
     }
   ]
 }
