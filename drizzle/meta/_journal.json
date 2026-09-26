@@ -29,6 +29,13 @@
       "when": 1790383103008,
       "tag": "0003_oval_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1790390559161,
+      "tag": "0004_smooth_shotgun",
+      "breakpoints": true
     }
   ]
 }
