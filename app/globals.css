@@ -39,3 +39,17 @@
 .modal-actions{flex-wrap:wrap}
 :root[data-planwire-theme="dark"] .permission-matrix,:root[data-planwire-theme="dark"] .permission-line{border-color:var(--border)}
 :root[data-planwire-theme="dark"] [data-slot="dialog-content"] .settings-notice{background:var(--muted);border-color:var(--border)}
+
+/* Grouped navigation scrolls independently so Settings remains within reach. */
+.sidebar{height:100dvh;min-height:0;overflow:hidden;padding:17px 12px 12px}
+.sidebar-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#344963 transparent;padding-right:3px}
+.sidebar .brand{padding-bottom:16px}
+.sidebar .workspace-label.mt{margin-top:12px}
+.sidebar .side-item{min-height:37px;padding:8px 12px;margin:1px 0;font-size:14px;gap:11px}
+.navigation-group{margin-top:18px}
+.navigation-group:first-child{margin-top:14px}
+.navigation-group-title{margin:0 0 6px;padding:0 12px;color:#8093ad;font-size:11px;line-height:1.5;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.sidebar .side-item:not(.active):hover{background:#ffffff0b;color:#fff}
+.sidebar-bottom{flex:none;margin-top:0;padding-top:10px;border-top:1px solid #29415b}
+.sidebar-bottom .account{margin-top:9px;padding-top:12px}
+.project-navigation{padding-bottom:14px}
