@@ -1,0 +1,1 @@
+ALTER TABLE `files` ADD `archived` integer DEFAULT false NOT NULL;
