@@ -1,0 +1,1 @@
+export const subscriptionPlans=[{id:'basic',name:'Basic',price:34},{id:'standard',name:'Standard',price:65},{id:'pro',name:'Pro',price:125},{id:'business-pro',name:'Business Pro',price:200}] as const;

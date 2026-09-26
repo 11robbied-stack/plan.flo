@@ -3,3 +3,10 @@ export const projects = sqliteTable('projects', { id:text('id').primaryKey(), ow
 export const records = sqliteTable('records', { id:text('id').primaryKey(), owner:text('owner').notNull(), projectId:text('project_id').notNull(), kind:text('kind').notNull(), title:text('title').notNull().default(''), status:text('status').notNull().default(''), data:text('data').notNull().default('{}'), created:text('created').notNull() }, t=>[index('idx_records_project_kind').on(t.projectId,t.kind)]);
 export const files = sqliteTable('files', { id:text('id').primaryKey(), owner:text('owner').notNull(), projectId:text('project_id').notNull(), category:text('category').notNull(), name:text('name').notNull(), mime:text('mime').notNull(), size:integer('size').notNull(), created:text('created').notNull() }, t=>[index('idx_files_project_category').on(t.projectId,t.category)]);
 export const settings = sqliteTable('settings', { owner:text('owner').primaryKey(), company:text('company').notNull().default(''), colour:text('colour').notNull().default('#1769f4'), theme:text('theme').notNull().default('Light'), abn:text('abn').notNull().default(''), address:text('address').notNull().default(''), email:text('email').notNull().default(''), phone:text('phone').notNull().default(''), logoFileId:text('logo_file_id').notNull().default('') });
+
+export const companyMembers=sqliteTable('company_members',{
+ id:text('id').primaryKey(),owner:text('owner').notNull(),email:text('email').notNull(),name:text('name').notNull(),userId:text('user_id').unique(),role:text('role').notNull().default('member'),permissions:text('permissions').notNull().default('{}'),status:text('status').notNull().default('pending'),tokenHash:text('token_hash').unique(),expires:text('expires'),created:text('created').notNull()
+},t=>[index('idx_company_members_owner').on(t.owner)]);
+export const subscriptions=sqliteTable('subscriptions',{
+ owner:text('owner').primaryKey(),plan:text('plan').notNull().default('unconfigured'),status:text('status').notNull().default('Not activated'),requestedPlan:text('requested_plan'),requestedAt:text('requested_at')
+});
