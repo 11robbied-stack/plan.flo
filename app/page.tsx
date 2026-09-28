@@ -69,6 +69,7 @@ export default function Home(){
  const notify=(s:string)=>{setToast(s);window.setTimeout(()=>setToast(''),3500)};
  const load=useCallback(async(id='')=>{try{const res=await fetch('/api/data'+(id?'?project='+encodeURIComponent(id):''),{cache:'no-store'});const data:any=await res.json();if(!res.ok){if(res.status===401||res.status===403){setProjects([]);setRecords([]);setFiles([]);setFolders([]);setSettings(initialSettings);setAccess({owner:'',role:'member',permissions:{},blocked:true});}throw new Error(data.error||'Could not load projects');}setAccess(data.access);setProjects(data.projects||[]);setBuilders(data.builders||[]);setRecords(data.records||[]);setFiles(data.files||[]);setFolders((data.folders||[]).sort((a:FileFolder,b:FileFolder)=>a.name.localeCompare(b.name)));setSettings(data.settings||initialSettings);setUser(data.user?.name||'');setError('')}catch(e:any){setError(e.message)}finally{setLoading(false)}},[]);
  useEffect(()=>{load(selected)},[load,selected]);
+ useEffect(()=>{if(new URLSearchParams(window.location.search).has('billing'))setSection('Settings')},[]);
  useEffect(()=>{setChosen([]);setTool('Select');setDraftMark(null)},[selected,section,plansFolder,photosFolder,plansArchived,photosArchived]);
  useEffect(()=>{setDiaryDay('');setTimeDay('');setPlansArchived(false);setPhotosArchived(false)},[selected]);
  useEffect(()=>{setPlansFolder('all');setPhotosFolder('all');setPlanId('');setTool('Select');setDraftMark(null)},[selected]);
