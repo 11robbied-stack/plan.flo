@@ -1,0 +1,4 @@
+export class BuilderInputError extends Error {}
+import {companyDb} from './company-access';
+export async function builderFor(owner:string,id:string){if(!id)return null;const b:any=await companyDb().prepare('SELECT * FROM builders WHERE id=? AND owner=?').bind(id,owner).first();return b?{...b,data:JSON.parse(b.data)}:null}
+export async function projectBuilder(owner:string,id:string,contactId:string,existingId=''){const builder=await builderFor(owner,id);if(id&&!builder)throw new BuilderInputError('The selected builder is unavailable.');if(builder?.status==='Inactive'&&id!==existingId)throw new BuilderInputError('Choose an active builder.');const contact=builder?.data.contacts?.find((c:any)=>c.id===contactId);if(contactId&&!contact)throw new BuilderInputError('Choose a contact from this builder.');return {builder,contact};}

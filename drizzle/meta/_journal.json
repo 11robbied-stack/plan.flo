@@ -71,6 +71,13 @@
       "when": 1790590019606,
       "tag": "0009_third_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1790591298557,
+      "tag": "0010_high_lizard",
+      "breakpoints": true
     }
   ]
 }
