@@ -85,6 +85,13 @@
       "when": 1790597215373,
       "tag": "0011_overconfident_magneto",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1790598560239,
+      "tag": "0012_giant_the_hand",
+      "breakpoints": true
     }
   ]
 }
