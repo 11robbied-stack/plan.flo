@@ -1,0 +1,1 @@
+ALTER TABLE `settings` ADD `staff_colours` text DEFAULT '{}' NOT NULL;
