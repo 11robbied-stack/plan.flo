@@ -57,6 +57,13 @@
       "when": 1790586447596,
       "tag": "0007_free_sister_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1790588147612,
+      "tag": "0008_known_joseph",
+      "breakpoints": true
     }
   ]
 }
