@@ -1,0 +1,4 @@
+import {companyDb} from './company-access';
+import {defaultPayrollConfig,payCategories,type PayrollConfig} from './payroll-model';
+export async function readPayrollConfig(owner:string){const row=await companyDb().prepare('SELECT data,version FROM payroll_config WHERE owner=?').bind(owner).first<{data:string;version:number}>();return {config:row?JSON.parse(row.data) as PayrollConfig:defaultPayrollConfig(),version:row?.version||0}}
+export async function timePayrollFields(owner:string,data:any){const {config}=await readPayrollConfig(owner);const staffId=String(data.staffId||''),payCategory=String(data.payCategory||'');const employee=config.employees.find(e=>e.id===staffId);if(staffId&&!employee)throw Error('Choose a valid payroll employee.');if(payCategory&&!payCategories.some(c=>c.id===payCategory))throw Error('Choose a valid pay category.');return {staffId,payCategory,...(employee?{employee:employee.name}:{})}}
