@@ -1,3 +1,4 @@
+import {variationStatus} from './variation-status';
 export type BudgetRecord={id:string;kind:string;title:string;status:string;data:string;created:string};
 const number=(v:unknown)=>Number.isFinite(Number(v))?Number(v):0;
 const cents=(v:unknown)=>Math.round(number(v)*100);
@@ -8,7 +9,7 @@ export function calculateBudget(project:{contract:number;budgetHours:number},row
  const expenses:{id:string;title:string;supplier:string;date:string;amount:number}[]=[];
  for(const row of rows){const d=read(row);if(row.kind==='time'){const h=number(d.hours);hours+=h;if(!number(d.rate)&&h>0)unpricedHours+=h;labourCents+=Math.round(h*number(d.rate)*100)}
  if(row.kind==='cost'){const value=cents(d.amount);expenseCents+=value;const category=String(d.category||'Other');categories[category]=(categories[category]||0)+value;expenses.push({id:row.id,title:row.title,supplier:String(d.supplier||''),date:String(d.date||row.created),amount:value/100})}
- if(row.kind==='variation'){const value=Array.isArray(d.items)&&d.items.length?d.items.reduce((sum:number,item:any)=>sum+Math.round(number(item.quantity)*number(item.rate)*100),0):cents(d.amount);if(['Approved','Invoiced'].includes(row.status))approvedCents+=value;if(['Submitted','Under review'].includes(row.status))pendingCents+=value;}}
+ if(row.kind==='variation'){const value=Array.isArray(d.items)&&d.items.length?d.items.reduce((sum:number,item:any)=>sum+Math.round(number(item.quantity)*number(item.rate)*100),0):cents(d.amount);if(variationStatus(row.status)==='Approved')approvedCents+=value;if(variationStatus(row.status)==='Pending')pendingCents+=value;}}
  const saved=rows.find(r=>r.kind==='budget'),budgetData=saved?read(saved):{};
  const costBudget=saved&&Number.isFinite(Number(budgetData.costBudget))?cents(budgetData.costBudget)/100:null;
  const contractCents=cents(project.contract),revisedCents=contractCents+approvedCents,totalCents=labourCents+expenseCents;

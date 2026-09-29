@@ -1,7 +1,7 @@
 import {PDFDocument,StandardFonts,rgb} from 'pdf-lib';
 import type {CompanyData} from './rfi-pdf';
 export type VariationItem={item:string;type:string;quantity:string;uom:string;rate:string};
-export type VariationData={number:string;title:string;submitted:string;reference:string;status:string;approvalReference:string;items:VariationItem[];inclusions:string[];exclusions:string[];clarifications:string[];eot:string;notes:string};
+export type VariationData={version?:number;approvedBy?:string;approvedAt?:string;number:string;title:string;submitted:string;reference:string;status:string;approvalReference:string;items:VariationItem[];inclusions:string[];exclusions:string[];clarifications:string[];eot:string;notes:string};
 const clean=(s:any)=>String(s??'').replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"').replace(/[\u2013\u2014]/g,'-').replace(/[^\x20-\x7e\u00a0-\u00ff]/g,' ');
 const fmt=(s:string)=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?`${s.slice(8,10)}/${s.slice(5,7)}/${s.slice(0,4)}`:s;
 export function variationTotals(items:VariationItem[]){const subtotalCents=items.reduce((total,row)=>total+Math.round((Number(row.quantity)||0)*(Number(row.rate)||0)*100),0);const gstCents=Math.round(subtotalCents*.1);return {subtotal:subtotalCents/100,gst:gstCents/100,total:(subtotalCents+gstCents)/100}}
