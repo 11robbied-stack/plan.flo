@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+const url=s=>'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64');
+const calendar=url(readFileSync('app/calendar-model.ts','utf8'));
+const {weekDays,shiftDay,workerRows,workerDayEntries,sumHours}=await import(url(readFileSync('app/timesheet-week.ts','utf8').replace("'./calendar-model'",JSON.stringify(calendar))));
+assert.deepEqual(weekDays('2026-09-30'),['2026-09-28','2026-09-29','2026-09-30','2026-10-01','2026-10-02','2026-10-03','2026-10-04']);
+assert.equal(weekDays('2026-10-04')[0],'2026-09-28');assert.equal(weekDays('2026-10-05')[0],'2026-10-05');assert.equal(weekDays('2027-01-01')[0],'2026-12-28');assert.equal(shiftDay('2026-10-04',1),'2026-10-05');
+const rows=[{id:'a',projectName:'DCOH',data:{employee:'Rob',date:'2026-09-28',hours:7.6}},{id:'b',projectName:'Riverside',data:{employee:' rob ',date:'2026-10-01',hours:7.6}},{id:'c',projectName:'DCOH',data:{employee:'Sam',date:'2026-09-28',hours:4}},{id:'d',projectName:'Riverside',data:{employee:'Sam',date:'2026-09-28',hours:3.6}}];
+assert.equal(workerRows(rows,['Rob','Sam','Alex']).length,3);assert.equal(workerDayEntries(rows,'rob','2026-09-28')[0].projectName,'DCOH');assert.equal(workerDayEntries(rows,'rob','2026-10-01')[0].projectName,'Riverside');assert.equal(sumHours(workerDayEntries(rows,'sam','2026-09-28')),7.6);assert.equal(sumHours(rows),22.8);assert.equal(workerDayEntries(rows,'rob','2026-10-04').length,0);
+console.log('PASS: Monday–Sunday dates, Sunday/Monday rollover, month/year and daylight-saving boundaries, staff grouping, multiple projects per day, blank days and exact decimal hour totals.');
