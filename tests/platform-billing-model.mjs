@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import ts from 'typescript';
+const transpile=s=>ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const url=s=>'data:text/javascript;base64,'+Buffer.from(s).toString('base64');
+const plans=url(transpile(fs.readFileSync('app/subscription-plans.ts','utf8')));
+const model=await import(url(transpile(fs.readFileSync('app/platform-billing-model.ts','utf8')).replace("'./subscription-plans'",JSON.stringify(plans))));
+assert.equal(model.stripeLink('https://invoice.stripe.com/i/example'),'https://invoice.stripe.com/i/example');for(const u of ['javascript:alert(1)','https://stripe.com.bad.test/x','http://invoice.stripe.com/x','https://evil.test/x'])assert.equal(model.stripeLink(u),null);
+assert.equal(model.requestedBilling('{}'),null);assert.equal(model.requestedBilling(JSON.stringify({plan:'pro',cycle:'annual',office:2,field:3})).totals.total,3280);
+const row=model.invoiceRow({id:'in_test',status:'open',due_date:1,total:1100,amount_paid:0,amount_remaining:1100,currency:'aud',customer:'sensitive',metadata:{secret:'private'},hosted_invoice_url:'https://invoice.stripe.com/i/test'});assert.equal(row.overdue,true);assert.equal(row.remaining,1100);assert(!('customer' in row));assert(!('metadata' in row));
+const sub=model.subscriptionRow({id:'sub_test',status:'active',cancel_at_period_end:true,current_period_end:123,items:{data:[{quantity:3,price:{unit_amount:2900,currency:'aud',recurring:{interval:'month'}}}]}});assert.equal(sub.items[0].periodEnd,123);assert.equal(sub.items[0].quantity,3);assert.equal(sub.cancelAtPeriodEnd,true);
+console.log('PASS: Stripe document URL validation, request pricing, invoice field minimisation, overdue labelling and subscription mapping.');

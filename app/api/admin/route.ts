@@ -1,3 +1,4 @@
+import {billingList,billingDetail} from '@/app/platform-billing';
 import {analytics} from '@/app/platform-analytics';
 import {NextRequest,NextResponse} from 'next/server';
 import {getChatGPTUser} from '@/app/chatgpt-auth';
@@ -14,6 +15,8 @@ function page(req:NextRequest){const n=Number(req.nextUrl.searchParams.get('offs
 function audit(actor:string,action:string,target:string,owner:string,detail:unknown,now:string,conditional=false){return platformDb().prepare(`INSERT INTO platform_audit(id,actor,action,target,owner,detail,created) SELECT ?,?,?,?,?,?,? ${conditional?'WHERE changes()>0':''}`).bind(crypto.randomUUID(),actor,action,target,owner,JSON.stringify(detail),now);}
 async function protectedAccount(owner:string){const list=operatorEmails();return !!await platformDb().prepare(`SELECT id FROM platform_users WHERE owner=? AND lower(email) IN (${list.map(()=>'?').join(',')}) LIMIT 1`).bind(owner,...list).first();}
 export async function GET(req:NextRequest){try{const c=await context();if(!c)return json({error:'PLAN.FLO platform administrator access is required.'},403);const {db}=c,view=req.nextUrl.searchParams.get('view')||'overview',offset=page(req),q=cleanText(req.nextUrl.searchParams.get('q'),200),like='%'+q+'%';
+if(view==='billing')return json(await billingList(q,offset));
+if(view==='billing-account'){const status=req.nextUrl.searchParams.get('status')||'all',after=req.nextUrl.searchParams.get('after')||'';if(!['all','draft','open','paid','void','uncollectible'].includes(status)||after&&!/^in_[A-Za-z0-9]+$/.test(after))return json({error:'Choose a valid invoice filter or page.'},400);try{const detail=await billingDetail(cleanText(req.nextUrl.searchParams.get('owner'),200),status,after);return detail?json(detail):json({error:'Billing account not found.'},404)}catch{return json({error:'Stripe billing could not be loaded. Check the connection and try again.'},502)}}
 if(view==='analytics')return json(await analytics());
 if(view==='overview'){const [counts,activity,sections,plans,recent]=await Promise.all([
  db.prepare(owners+` SELECT (SELECT COUNT(*) FROM owners) AS accounts,(SELECT COUNT(*) FROM platform_accounts WHERE status='Suspended') AS suspended,(SELECT COUNT(*) FROM platform_accounts WHERE status='Closed') AS closed,(SELECT COUNT(*) FROM platform_users) AS users,(SELECT COUNT(*) FROM platform_users WHERE last_seen>=strftime('%Y-%m-%dT%H:%M:%fZ','now','-30 days')) AS activeUsers,(SELECT COUNT(*) FROM projects) AS projects,(SELECT COUNT(*) FROM files) AS files,(SELECT COUNT(*) FROM feedback WHERE status NOT IN ('Resolved','Closed')) AS openTickets,(SELECT MIN(first_seen) FROM platform_users) AS trackingStarted`).first(),

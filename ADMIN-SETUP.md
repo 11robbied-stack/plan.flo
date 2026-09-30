@@ -33,3 +33,13 @@ Company growth uses first recorded account access, not an unverified signup time
 Storage totals use file metadata and include all retained drawing revisions. Requested-package allowances are labelled as indicative. Upload outcome recording includes authenticated, non-blocked requests to file and drawing-revision upload endpoints, including validation/permission failures; network requests that never arrive cannot be measured. Logging failure does not invalidate a successful upload. No filenames or file contents are copied to the upload outcome log.
 
 Support resolution timestamps start with this change. Reopening clears the timestamp; resolving again measures from original ticket creation to the latest resolution. Already resolved tickets without a timestamp are omitted from the median. Both company feedback status updates and platform ticket edits maintain this timestamp. Topic tags are operator-entered and grouped exactly; there is no automatic AI classification. Revenue remains unavailable until verified live Stripe events are integrated.
+
+## Platform Invoicing & Billing
+
+The dedicated admin section lists company billing records, requested packages, billing frequency and additional users. Requested totals are recalculated using the current catalogue and labelled as estimates excluding GST; they are not invoice totals, confirmed subscriptions or revenue.
+
+Opening a company loads Stripe invoices (25 per page, with status filters) and subscriptions (up to 100, including cancelled records). Only the server-stored `billing_accounts.customer_id` selects the Stripe customer; request parameters cannot override it. The server checks returned customer IDs and live/test modes and exposes only a limited invoice/subscription field set. Invoice links accept HTTPS Stripe domains only. No full card details, provider credentials or raw customer records are returned.
+
+`STRIPE_SECRET_KEY` enables read access, supporting secret or restricted keys in test/live mode. Restricted keys need invoice and subscription read permissions. No key shows a clear disconnected state. This does not lift the existing test-only checkout guard or implement live webhook entitlement processing. No admin charge/refund/cancel endpoints were added; those operations stay in the authenticated Stripe dashboard. Opening an external Stripe customer page requires the operator's own Stripe login. App account closure still does not cancel billing.
+
+References: https://docs.stripe.com/api/invoices/list and https://docs.stripe.com/api/subscriptions/list. The adapter uses the existing application's pinned API version, 2025-02-24.acacia.
