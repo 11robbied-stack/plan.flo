@@ -1,3 +1,4 @@
+import {operatorRole} from './operator-access';
 import {observeIdentity,isPlatformAdmin} from './platform-store';
 import {normaliseAppSettings,disabledTabs} from './app-settings-model';
 import {env} from 'cloudflare:workers';
@@ -5,12 +6,13 @@ import {fieldUserTabs} from './subscription-plans';
 import type {ChatGPTUser} from './chatgpt-auth';
 import {type Access,normalisePermissions} from './permissions';
 export function companyDb(){if(!env.DB)throw new Error('Database unavailable');return env.DB;}
-export async function getCompanyAccess(user:ChatGPTUser):Promise<Access>{
+export async function getCompanyAccess(user:ChatGPTUser,observe=true):Promise<Access>{
  const membership=await companyDb().prepare('SELECT owner, role, permissions, status, seat_type FROM company_members WHERE user_id = ?').bind(user.userId).first<{owner:string;role:string;permissions:string;status:string;seat_type:string}>();
  const owner=membership?.owner||user.userId;
- const platform=await observeIdentity(user,owner);
+ const state=observe?null:await companyDb().prepare('SELECT a.status AS a,u.status AS u FROM platform_accounts a JOIN platform_users u ON u.owner=a.owner WHERE u.id=?').bind(user.userId).first<any>();
+ const platform=observe?await observeIdentity(user,owner):{blocked:state?.a!=='Active'||state?.u!=='Active'};
  const [config,legacy]=await Promise.all([companyDb().prepare('SELECT data FROM app_settings WHERE owner=?').bind(owner).first<any>(),companyDb().prepare('SELECT colour,theme FROM settings WHERE owner=?').bind(owner).first<any>()]);
- const appSettings=normaliseAppSettings(config?.data,legacy||{}),features={appSettings,disabledTabs:disabledTabs(appSettings),platformAdmin:isPlatformAdmin(user)};
+ const appSettings=normaliseAppSettings(config?.data,legacy||{}),features={appSettings,disabledTabs:disabledTabs(appSettings),platformAdmin:!!await operatorRole(user)};
  if(!membership)return {owner:user.userId,role:'owner',permissions:{},blocked:platform.blocked,...features};
  const permissions=normalisePermissions(JSON.parse(membership.permissions));
  if(membership.seat_type==='field')for(const tab of Object.keys(permissions))if(!fieldUserTabs.includes(tab))permissions[tab]={view:false,edit:false};

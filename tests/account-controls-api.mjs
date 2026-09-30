@@ -1,0 +1,53 @@
+import assert from 'node:assert/strict';
+const base='http://127.0.0.1:8787',n=Date.now(),owner='controls-'+n,other='other-controls-'+n,support='support-'+n,billing='billing-'+n;
+async function api(path,body,user='operator'){const r=await fetch(base+'/api/'+path,{method:body?'POST':'GET',headers:{'content-type':'application/json',origin:base,'oai-authenticated-user-id':user,'oai-authenticated-user-email':user+'@example.test'},body:body?JSON.stringify(body):undefined});const raw=await r.text();return {status:r.status,data:raw?JSON.parse(raw):null}}
+async function ok(path,body,user){const r=await api(path,body,user);assert.equal(r.status,200,JSON.stringify(r));return r.data}
+const controls=(b,u)=>api('admin-controls',b,u),detail=()=>ok('admin-controls?view=detail&owner='+owner);
+for(const u of [owner,other,support,billing])await ok('data',null,u);
+for(const [u,role] of [[support,'support'],[billing,'billing']])await ok('admin-controls',{action:'operator',email:u+'@example.test',role,active:true,version:0});
+assert.equal((await api('admin-controls?view=index',null,owner)).status,403);
+for(const [u,views] of [[support,['overview','accounts','users','audit','billing']],[billing,['overview','accounts','users','audit','tickets']]])for(const v of views)assert.equal((await api('admin?view='+v,null,u)).status,403);
+await ok('admin?view=tickets',null,support);await ok('admin?view=billing',null,billing);
+assert.equal((await controls({action:'operator',email:'evil@example.test',role:'support',active:true,version:0},support)).status,403);
+assert.equal((await controls({action:'operator',email:'operator@example.test',role:'support',active:false,version:0})).status,400);
+const limits={action:'limits',owner,enabled:true,plan:'custom',projects:1,office:1,field:1,bytes:30,version:0,reason:'Integration check',overrides:{}};
+await ok('admin-controls',limits);assert.equal((await controls(limits)).status,409);assert.equal((await controls({...limits,version:1},support)).status,403);
+const race=await Promise.all(['A','B'].map(name=>api('data',{action:'project',name},owner)));assert.deepEqual(race.map(r=>r.status).sort(),[200,409]);const project=race.find(r=>r.status===200).data.id;
+assert.equal((await api('company',{action:'add',name:'Office',email:'office-'+n+'@example.test',role:'member',seatType:'office',permissions:{}},owner)).status,409);
+const member='field-'+n;const invite=await ok('company',{action:'add',name:'Field',email:member+'@example.test',role:'member',seatType:'field',permissions:{}},owner);
+assert.equal((await api('company',{action:'add',name:'Extra',email:'extra-'+n+'@example.test',role:'member',seatType:'field',permissions:{}},owner)).status,409);
+let d=await detail();const m=d.members[0];assert(!JSON.stringify(d).includes('token_hash'));
+await ok('admin-controls',{action:'invite-revoke',owner,id:m.id},support);assert.equal((await api('company',{action:'accept',token:invite.token},member)).status,400);
+const renewed=await ok('admin-controls',{action:'invite-renew',owner,id:m.id},support);await ok('company',{action:'accept',token:new URL(renewed.url).searchParams.get('invite')},member);
+// An accepted invite does not consume an additional reserved seat.
+assert.equal((await detail()).usage.field,1);
+await ok('admin-controls',{...limits,version:1,overrides:{projects:2},expires:new Date(Date.now()+1000).toISOString()});
+await ok('data',{action:'project',name:'Temporary capacity'},owner);
+await new Promise(r=>setTimeout(r,1100));assert.equal((await api('data',{action:'project',name:'Expired cap'},owner)).status,409);
+async function upload(size,route='upload',extra={}){const f=new FormData();f.set('file',new Blob(['a'.repeat(size)],{type:'application/pdf'}),'test.pdf');f.set('category','plans');f.set('projectId',project);for(const [k,v] of Object.entries(extra))f.set(k,v);const r=await fetch(base+'/api/'+route,{method:'POST',headers:{origin:base,'oai-authenticated-user-id':owner,'oai-authenticated-user-email':owner+'@example.test'},body:f});return {status:r.status,data:await r.json()}}
+const file=await upload(10);assert.equal(file.status,200);assert.equal((await upload(15,'plan-revisions',{fileId:file.data.id,label:'Rev 2'})).status,200);assert.equal((await detail()).usage.bytes,25);assert.equal((await upload(10,'plan-revisions',{fileId:file.data.id,label:'Rev 3'})).status,409);assert.equal((await upload(10)).status,409);assert.equal((await detail()).usage.bytes,25);
+const ticket=crypto.randomUUID();await ok('feedback',{action:'submit',id:ticket,type:'Problem',impact:'Blocking work',subject:'Help me',message:'Test ticket',section:'Dashboard'},member);
+const message=crypto.randomUUID();await ok('admin-controls',{action:'ticket-reply',owner,id:message,ticketId:ticket,subject:'Support response',body:'We are investigating.'},support);
+assert.equal((await ok('customer-messages',null,other)).items.length,0);
+assert((await ok('customer-messages',null,member)).items.some(m=>m.id===message));
+assert.equal((await api('customer-messages',{action:'read',messageId:message},other)).status,404);
+await ok('customer-messages',{action:'read',messageId:message},member);
+await ok('customer-messages',{action:'reply',messageId:message,id:crypto.randomUUID(),body:'Thank you'},member);
+assert.equal((await ok('admin?view=ticket&id='+ticket)).ticket.status,'Reviewing');assert((await ok('admin-controls?view=conversation&owner='+owner+'&ticketId='+ticket,null,support)).items.some(m=>m.body==='Thank you'));
+assert.equal((await detail()).messages.find(m=>m.id===message).readers,1);assert((await detail()).messages.some(m=>m.body==='Thank you'));
+const before=(await detail()).users.find(u=>u.id===owner).last_seen;
+const session=await ok('admin-controls',{action:'support-start',owner,userId:owner,reason:'Investigate ticket'},support);
+assert.equal((await api('admin-controls?view=preview&session='+session.id)).status,403);
+const preview=await ok('admin-controls?view=preview&session='+session.id,null,support);assert(preview.readOnly);assert.equal(preview.projects.length,2);assert.equal((await detail()).users.find(u=>u.id===owner).last_seen,before);
+await ok('admin-controls',{action:'support-end',session:session.id},support);assert.equal((await api('admin-controls?view=preview&session='+session.id,null,support)).status,403);
+assert.equal((await api('admin-controls?view=export&owner='+owner,null,support)).status,403);
+const exported=await ok('admin-controls?view=export&owner='+owner);assert.equal(exported.tables.projects.length,2);assert(!JSON.stringify(exported).includes('token_hash'));assert(exported.fileDownloads.length>=2);
+assert.equal((await api('admin-controls?view=file&owner='+other+'&id='+file.data.id)).status,404);
+assert.equal((await controls({action:'delete-request',owner,reason:'Requested deletion',confirmation:'wrong'})).status,400);
+await ok('admin-controls',{action:'delete-request',owner,reason:'Requested deletion',confirmation:'DELETE '+owner});
+assert.equal((await api('data',null,owner)).status,403);assert.equal((await api('customer-messages',null,member)).status,403);
+assert.equal((await controls({action:'delete-purge',owner,confirmation:'DELETE '+owner})).status,400);
+let account=await ok('admin?view=account&owner='+owner);assert.equal((await api('admin',{action:'account-status',owner,version:account.account.version,status:'Active',reason:'Must cancel first'})).status,409);
+await ok('admin-controls',{action:'delete-cancel',owner});account=await ok('admin?view=account&owner='+owner);await ok('admin',{action:'account-status',owner,version:account.account.version,status:'Active',reason:'Review cancelled deletion'});await ok('data',null,owner);
+await ok('admin-controls',{action:'operator',email:support+'@example.test',role:'support',active:false,version:1});assert.equal((await api('admin?view=tickets',null,support)).status,403);
+console.log('PASS: delegated roles, quota concurrency and expiry, invitation lifecycle, revision storage, inbox isolation and replies, support auditing, exports and guarded deletion.');
