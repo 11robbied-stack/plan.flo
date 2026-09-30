@@ -127,6 +127,13 @@
       "when": 1790738589187,
       "tag": "0017_lonely_blockbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1790747259153,
+      "tag": "0018_military_tigra",
+      "breakpoints": true
     }
   ]
 }

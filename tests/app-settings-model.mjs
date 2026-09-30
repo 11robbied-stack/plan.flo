@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+const source=ts.transpileModule(readFileSync('app/project-stages.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const stages='data:text/javascript;base64,'+Buffer.from(source).toString('base64');
+const configSrc=ts.transpileModule(readFileSync('app/app-settings-model.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText.replace("'./project-stages'",JSON.stringify(stages));
+const {defaultAppSettings,disabledTabs,normaliseAppSettings,validateAppSettings}=await import('data:text/javascript;base64,'+Buffer.from(configSrc).toString('base64'));
+const perm=ts.transpileModule(readFileSync('app/permissions.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {canAccess}=await import('data:text/javascript;base64,'+Buffer.from(perm).toString('base64'));
+const original=defaultAppSettings();assert.equal(disabledTabs(original).length,0);
+assert.equal(normaliseAppSettings(null,{theme:'Dark',colour:'#112233'}).theme,'Dark');
+assert.equal(normaliseAppSettings('{broken').defaultView,'Overview');
+const config=structuredClone(original);config.modules.budgeting=false;config.modules.schedule=false;
+const tabs=disabledTabs(config);assert(tabs.includes('Costs'));assert(tabs.includes('Budget Overview'));assert(tabs.includes('Schedule'));assert(!tabs.includes('Time'));
+for(const role of ['owner','admin','member']){const access={role,permissions:{Costs:{view:true,edit:true},Time:{view:true,edit:true}},disabledTabs:tabs};assert.equal(canAccess(access,'Costs'),false);assert.equal(canAccess(access,'Time'),true);}
+assert.equal(canAccess({role:'member',permissions:{Time:{view:true,edit:false}},disabledTabs:[]},'Time',true),false);
+validateAppSettings(config);config.defaultView='Budget Overview';assert.throws(()=>validateAppSettings(config));
+for(const patch of [{dailyHours:0},{dailyHours:17},{workingDays:[]},{workingDays:[1,1]},{colour:'red'},{theme:'Fake'},{shiftStart:'23:00'},{stages:[{id:'one',name:'',colour:'#ffffff'}]},{modules:{unknown:true}}])assert.throws(()=>validateAppSettings({...original,...patch}));
+const roundTrip=validateAppSettings(JSON.parse(JSON.stringify(original)));assert.deepEqual(roundTrip,original);
+assert.equal(disabledTabs(defaultAppSettings()).length,0);
+console.log('PASS: default compatibility, legacy appearance, strict validation, disabled budget/schedule for every role, permission intersection, invalid default view and settings round-trip.');
