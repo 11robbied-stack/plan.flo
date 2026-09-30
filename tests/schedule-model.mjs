@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import ts from 'typescript';
+import {readFileSync} from 'node:fs';
+const src=ts.transpileModule(readFileSync('app/schedule-model.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {plannedHours,validateShift,scheduleConflicts,validScheduleDate}=await import('data:text/javascript;base64,'+Buffer.from(src).toString('base64'));
+const base={id:'a',workerKey:'worker',projectId:'p',kind:'work',date:'2026-09-30',start:'07:00',end:'15:06',breakMinutes:30};
+assert.equal(plannedHours(base),7.6);assert.equal(plannedHours({...base,breakMinutes:0}),8.1);
+assert.equal(plannedHours({...base,kind:'leave'}),0);
+validateShift(base);assert(!validScheduleDate('2026-02-30'));
+for(const v of [{...base,end:'06:00'},{...base,breakMinutes:486},{...base,breakMinutes:-1},{...base,start:'25:00'},{...base,date:'2026-02-30'},{...base,projectId:''},{...base,kind:'leave',workerKey:'',leaveType:'Annual leave'}])assert.throws(()=>validateShift(v));
+assert.equal(scheduleConflicts([base,{...base,id:'b',start:'14:00',end:'16:00'}]).length,1);
+assert.equal(scheduleConflicts([base,{...base,id:'b',start:'15:06',end:'17:00'}]).length,0);
+assert.equal(scheduleConflicts([base,{...base,id:'b',workerKey:'different'}]).length,0);
+assert.equal(scheduleConflicts([base,{...base,id:'b',kind:'leave',start:'',end:''}]).length,1);
+assert.equal(scheduleConflicts([{...base,workerKey:''},{...base,id:'b',workerKey:''}]).length,0);
+console.log('PASS: shift hours and breaks, leave, invalid dates/times, adjacency, worker isolation and conflict detection.');

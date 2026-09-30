@@ -28,6 +28,7 @@ export const subscriptionFeatures:ReadonlyArray<{label:string;level:number;plann
  {label:'Drawing revisions & overlays',level:1},
  {label:'RFIs & variation approvals',level:1},
  {label:'Weekly timesheets & calendars',level:1},
+ {label:'Staff scheduling & leave planning',level:1},
  {label:'Reusable Site Docs forms & sign-offs',level:1},
  {label:'Test & Tag register & equipment checks',level:1},
  {label:'Purchase orders',level:2},

@@ -1,4 +1,4 @@
-export const permissionTabs=['Overview','Project Setup','Drawings','SLD','Tasks','Budget Overview','Time','Costs','RFIs','Variations','Photos','Specifications','Files','Site Diary','Site Docs','Test & Tag Register','EWP','COES','O&M Manuals','Builders','Purchase Orders'] as const;
+export const permissionTabs=['Schedule','Overview','Project Setup','Drawings','SLD','Tasks','Budget Overview','Time','Costs','RFIs','Variations','Photos','Specifications','Files','Site Diary','Site Docs','Test & Tag Register','EWP','COES','O&M Manuals','Builders','Purchase Orders'] as const;
 export type Permissions=Record<string,{view:boolean;edit:boolean}>;
 export type Access={owner:string;role:'owner'|'admin'|'member';permissions:Permissions;blocked?:boolean};
 export function normalisePermissions(value:unknown):Permissions{const v=(value&&typeof value==='object'?value:{}) as Record<string,any>;return Object.fromEntries(permissionTabs.map(tab=>{const permission=v[tab]??(tab==='Drawings'?v.Plans:undefined);return [tab,{view:permission?.view===true,edit:permission?.view===true&&permission?.edit===true}]}))}
