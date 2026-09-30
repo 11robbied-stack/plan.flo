@@ -23,3 +23,13 @@ Subscription values shown are the app's stored records. Closing or suspending an
 ## Verification
 
 Run the TypeScript check and production build. Apply the append-only Drizzle migrations to a local D1 database, start the built worker locally with the test operator environment value, then run `node tests/platform-admin-api.mjs`. Tests create only local fixtures and cover operator isolation, suspension at API level, restoration, private ticket notes, optimistic concurrency, audit history and usage recording. Existing app-settings and scheduling API tests provide regression coverage.
+
+## Analytics
+
+Overview remains unchanged. The separate Analytics page contains Growth, Product usage, Support and Revenue tabs. Its reporting window is the current UTC calendar day plus the preceding 29 days, compared with the preceding 30-day period. Historical comparisons may be incomplete until enough section-view history exists.
+
+Company growth uses first recorded account access, not an unverified signup timestamp. Setup milestones reflect currently retained projects, drawings and active memberships. Follow-up suggestions are active companies with no project after seven days or no section visit for fourteen days; they do not automatically contact customers. Adoption uses section visits among active companies with the module currently enabled, not historic entitlement snapshots or completed actions. Work counts use the existing persisted review activity log; equipment checks created are not assumed to be signed off.
+
+Storage totals use file metadata and include all retained drawing revisions. Requested-package allowances are labelled as indicative. Upload outcome recording includes authenticated, non-blocked requests to file and drawing-revision upload endpoints, including validation/permission failures; network requests that never arrive cannot be measured. Logging failure does not invalidate a successful upload. No filenames or file contents are copied to the upload outcome log.
+
+Support resolution timestamps start with this change. Reopening clears the timestamp; resolving again measures from original ticket creation to the latest resolution. Already resolved tickets without a timestamp are omitted from the median. Both company feedback status updates and platform ticket edits maintain this timestamp. Topic tags are operator-entered and grouped exactly; there is no automatic AI classification. Revenue remains unavailable until verified live Stripe events are integrated.

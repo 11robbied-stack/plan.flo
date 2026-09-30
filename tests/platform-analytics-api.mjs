@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+const base='http://127.0.0.1:8787',owner='analytics-'+Date.now();
+const headers=user=>({'content-type':'application/json',origin:base,...(user?{'oai-authenticated-user-id':user,'oai-authenticated-user-email':user+'@example.test'}:{})});
+async function api(path,body,user='operator'){const r=await fetch(base+'/api/'+path,{method:body?'POST':'GET',headers:headers(user),body:body?JSON.stringify(body):undefined});return {status:r.status,data:r.status===204?null:await r.json()}}
+assert.equal((await api('admin?view=analytics',null,'')).status,403);assert.equal((await api('admin?view=analytics',null,owner)).status,403);
+let response=await api('admin?view=analytics');assert.equal(response.status,200,JSON.stringify(response.data));const before=response.data;
+await api('data',null,owner);await api('usage',{section:'Drawings'},owner);
+const project=(await api('data',{action:'project',name:'Analytics project'},owner)).data.id;assert(project);
+await api('data',{action:'record',projectId:project,kind:'time',title:'Analytics time',data:{hours:7.6,employee:'Test'}},owner);
+let after=(await api('admin?view=analytics')).data;assert.equal(after.growth.newlyRecorded,before.growth.newlyRecorded+1);assert.equal(after.usage.companies,before.usage.companies+1);assert.equal(after.cohort.projects,before.cohort.projects+1);
+const drawing=after.adoption.find(a=>a.name==='Drawings'),oldDrawing=before.adoption.find(a=>a.name==='Drawings');assert.equal(drawing.used,oldDrawing.used+1);assert.equal(drawing.eligible,oldDrawing.eligible+1);
+const settings=(await api('app-settings',null,owner)).data;settings.config.modules.drawings=false;await api('app-settings',{config:settings.config,version:settings.version},owner);
+after=(await api('admin?view=analytics')).data;assert.equal(after.adoption.find(a=>a.name==='Drawings').eligible,oldDrawing.eligible);assert.equal(after.adoption.find(a=>a.name==='Drawings').used,oldDrawing.used);
+const id=crypto.randomUUID();await api('feedback',{action:'submit',id,type:'Problem',impact:'Blocking work',subject:'Analytics support',message:'Help with upload',section:'Dashboard'},owner);
+let ticket=(await api('admin?view=ticket&id='+id)).data.ticket;
+assert.equal((await api('admin',{action:'ticket',id,version:ticket.version,status:'Resolved',priority:'High',category:'Bug',assignee:'',topic:'Analytics test uploads'})).status,200);
+after=(await api('admin?view=analytics')).data;assert.equal(after.support.resolutionCount,before.support.resolutionCount+1);assert(after.support.resolutionHours!==null);assert.equal(after.support.topics.find(t=>t.topic==='Analytics test uploads').count,1);
+ticket=(await api('admin?view=ticket&id='+id)).data.ticket;assert(ticket.resolved_at);await api('feedback',{action:'status',id,version:ticket.version,status:'Reviewing'},owner);
+ticket=(await api('admin?view=ticket&id='+id)).data.ticket;assert.equal(ticket.resolved_at,null);await api('feedback',{action:'status',id,version:ticket.version,status:'Closed'},owner);ticket=(await api('admin?view=ticket&id='+id)).data.ticket;assert(ticket.resolved_at);
+const form=new FormData();form.set('category','files');form.set('projectId',project);form.set('file',new Blob(['analytics fixture'],{type:'text/plain'}),'analytics.txt');let h=headers(owner);delete h['content-type'];assert.equal((await fetch(base+'/api/upload',{method:'POST',headers:h,body:form})).status,200);
+assert.equal((await fetch(base+'/api/upload',{method:'POST',headers:h,body:new FormData()})).status,400);
+after=(await api('admin?view=analytics')).data;assert.equal(after.uploads.attempts,Number(before.uploads.attempts)+2);assert.equal(after.uploads.failed,Number(before.uploads.failed)+1);assert.equal(after.storage.find(s=>s.owner===owner).bytes,17);assert.equal(after.revenue.connected,false);
+assert.equal((await api('admin?view=overview')).status,200);assert.equal((await api('admin?view=ticket&id='+id,null,owner)).status,403);
+console.log('PASS: analytics access isolation, real cohort/activity counts, enabled-module denominators, resolution/reopening through both APIs, topic grouping, upload outcomes, storage totals, revenue unavailable and Overview preserved.');
