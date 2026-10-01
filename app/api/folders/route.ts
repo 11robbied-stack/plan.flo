@@ -5,7 +5,7 @@ import {canAccess,fileTab} from '@/app/permissions';
 export async function POST(req:NextRequest){try{
  const user=await getChatGPTUser();if(!user)return NextResponse.json({error:'Sign in required.'},{status:401});
  const access=await getCompanyAccess(user),b:any=await req.json(),projectId=String(b.projectId||''),category=String(b.category||'');
- if(!['plans','photos'].includes(category))return NextResponse.json({error:'Folders are available for plans and photos.'},{status:400});
+ if(!['plans','photos','sld','specifications'].includes(category))return NextResponse.json({error:'Folders are available for drawings, photos, SLD and specifications.'},{status:400});
  if(!canAccess(access,fileTab(category),true))return NextResponse.json({error:'You need edit access to organise these files.'},{status:403});
  const db=companyDb(),project=await db.prepare('SELECT id FROM projects WHERE id=? AND owner=?').bind(projectId,access.owner).first();if(!project)return NextResponse.json({error:'Project unavailable.'},{status:404});
  const folderId=String(b.folderId||'');

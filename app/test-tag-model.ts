@@ -1,0 +1,3 @@
+import type {EquipmentEntry} from './equipment-model';
+export function testTagState(data:any,today:string){if(data.result==='Fail')return 'Failed';if(!data.nextDue)return 'No retest date';if(data.nextDue<today)return 'Overdue';const end=new Date(today+'T12:00:00Z');end.setUTCDate(end.getUTCDate()+30);return data.nextDue<=end.toISOString().slice(0,10)?'Due within 30 days':'In date'}
+export function latestTests(rows:EquipmentEntry[]){const seen=new Set<string>();return [...rows].sort((a,b)=>(b.data.date||'').localeCompare(a.data.date||'')||b.created.localeCompare(a.created)).filter(r=>{const key=String(r.data.assetId||r.id).trim().toLowerCase();if(seen.has(key))return false;seen.add(key);return true})}

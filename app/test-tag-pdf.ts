@@ -1,0 +1,14 @@
+import {PDFDocument,StandardFonts,rgb} from 'pdf-lib';
+import type {EquipmentEntry} from './equipment-model';
+import {testTagState} from './test-tag-model';
+export async function buildTestTagPdf(rows:EquipmentEntry[],context:{project:string;company:string;today:string;filter:string}){
+ const pdf=await PDFDocument.create(),font=await pdf.embedFont(StandardFonts.Helvetica),bold=await pdf.embedFont(StandardFonts.HelveticaBold);let page:any,y=0;
+ const clean=(v:any)=>String(v??'').normalize('NFKD').replace(/[^\x20-\x7e\n]/g,'-');
+ function newPage(){page=pdf.addPage([595.28,841.89]);page.drawText('PLAN.FLO  /  TEST & TAG REGISTER',{x:40,y:800,size:14,font:bold,color:rgb(.1,.2,.36)});page.drawLine({start:{x:40,y:785},end:{x:555,y:785},color:rgb(.82,.86,.92)});y=763}
+ function line(value:string,size=10,strong=false){if(y<62)newPage();page.drawText(value,{x:40,y,size,font:strong?bold:font,color:rgb(.12,.18,.26)});y-=size+6}
+ function text(value:any,strong=false,size=10){const face=strong?bold:font;for(const para of clean(value).split('\n')){let row='';for(const word of para.split(/\s+/)){if(face.widthOfTextAtSize(row+(row?' ':'')+word,size)<=500){row+=(row?' ':'')+word;continue}if(row){line(row,size,strong);row=''}let chunk='';for(const char of word){if(face.widthOfTextAtSize(chunk+char,size)>500){line(chunk,size,strong);chunk=''}chunk+=char}row=chunk}line(row,size,strong)}}
+ newPage();text(context.company||'Company not supplied',true);text('Project: '+context.project);text('Exported: '+context.today+' | '+context.filter);text(rows.length+' test records shown');text('Recorded test results only. This register is not a certificate of electrical safety.');y-=12;
+ for(const r of rows){if(y<180)newPage();text(r.title||'Unnamed equipment',true,12);text('Asset / tag ID: '+(r.data.assetId||'-')+' | Serial: '+(r.data.serial||'-'));text('Location: '+(r.data.location||'-'));text('Test date: '+(r.data.date||'-')+' | Next test: '+(r.data.nextDue||'Not recorded'));text('Result: '+(r.data.result||'-')+' | Status: '+testTagState(r.data,context.today),true);text('Tested by: '+(r.data.tester||'-'));if(r.data.notes)text('Notes: '+r.data.notes);y-=12}
+ const pages=pdf.getPages();pages.forEach((p,i)=>p.drawText(`PLAN.FLO | ${i+1} of ${pages.length}`,{x:40,y:30,font,size:9,color:rgb(.4,.46,.55)}));return pdf.save();
+}
+export async function downloadTestTagPdf(rows:EquipmentEntry[],context:{project:string;company:string;today:string;filter:string}){const bytes=await buildTestTagPdf(rows,context),url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:'application/pdf'}));const a=document.createElement('a');a.href=url;a.download=(context.project.replace(/[^a-z0-9 -]/gi,'').slice(0,60)||'Project')+' - Test and Tag.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000)}
