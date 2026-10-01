@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+const base='http://127.0.0.1:8787',n=Date.now(),owner='staff-customer-'+n,support='staff-support-'+n,billing='staff-billing-'+n;
+async function api(path,body,user='operator',origin=base){const r=await fetch(base+'/api/'+path,{method:body?'POST':'GET',headers:{origin,'content-type':'application/json',...(user?{'oai-authenticated-user-id':user,'oai-authenticated-user-email':user+'@example.test'}:{})},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()}}
+async function ok(path,b,u){const r=await api(path,b,u);assert.equal(r.status,200,JSON.stringify(r));return r.data}
+await ok('data',null,owner);
+for(const [u,role] of [[support,'support'],[billing,'billing']])await ok('admin-controls',{action:'operator',email:u+'@example.test',role,active:true,version:0});
+for(const u of ['',owner])for(const v of ['tasks','leads','demos','connections'])assert.equal((await api('staff-work?view='+v,null,u)).status,403);
+assert.equal((await api('staff-work',{action:'scan'},'operator','https://bad.example')).status,403);
+for(const v of ['leads','demos','connections'])assert.equal((await api('staff-work?view='+v,null,billing)).status,403);
+assert.equal((await api('staff-work?view=tasks&category=Reconciliation',null,support)).status,403);
+const tid=crypto.randomUUID();await ok('feedback',{action:'submit',id:tid,type:'Problem',impact:'Blocking work',subject:'Staff test '+n,message:'Please help with this task',section:'Dashboard'},owner);
+assert((await ok('staff-work?view=tasks&q='+n)).items.some(t=>t.source_id===tid),'new support ticket creates its task immediately');
+await ok('company',{action:'subscription',plan:'pro'},owner);
+await ok('staff-work',{action:'scan'});
+let tasks=await ok('staff-work?view=tasks&q='+n);let ticket=tasks.items.find(t=>t.source_id===tid);assert(ticket);assert.equal(ticket.status,'Review');
+const scan=await ok('staff-work',{action:'scan'});assert.equal(scan.changed,0,'same source must not duplicate or rewrite tasks');
+const updates=await Promise.all(['Checked once','Checked twice'].map(outcome=>api('staff-work',{action:'task',...ticket,status:'Done',outcome},support)));assert.deepEqual(updates.map(r=>r.status).sort(),[200,409]);
+await ok('staff-work',{action:'scan'});tasks=await ok('staff-work?view=tasks&status=All&q='+n);assert.equal(tasks.items.find(t=>t.id===ticket.id).status,'Done');
+const orig=(await ok('admin?view=ticket&id='+tid)).ticket;await ok('admin',{action:'ticket',id:tid,version:orig.version,status:'Reviewing',priority:'High',category:'Bug',assignee:'',note:'New source activity'});await ok('staff-work',{action:'scan'});ticket=(await ok('staff-work?view=tasks&q='+n)).items.find(t=>t.source_id===tid);assert.equal(ticket.status,'Review');
+assert.equal((await api('staff-work',{action:'task',...ticket,status:'Done',outcome:''},support)).status,400);
+assert.equal((await api('staff-work',{action:'task',...ticket,status:'Open'},billing)).status,403);
+const reconciliations=await ok('staff-work?view=tasks',null,billing);assert(reconciliations.items.every(t=>t.category==='Reconciliation'));
+const lead=await ok('staff-work',{action:'lead',name:'Lead '+n,company:'Fixture',email:'lead@example.test',phone:'123',stage:'New',assignee:support+'@example.test',follow_up:'2026-10-03',notes:'Demo enquiry'},support);
+let l=(await ok('staff-work?view=leads&q='+n,null,support)).items.find(l=>l.id===lead.id);assert(l);assert((await ok('staff-work?view=tasks&q='+n,null,support)).items.some(t=>t.source_id===lead.id));
+assert.equal((await api('staff-work',{action:'lead',...l,version:0},support)).status,409);
+assert.equal((await api('staff-work',{action:'lead',...l,assignee:billing+'@example.test'},support)).status,400);
+const demoInput={action:'demo',title:'Demo '+n,lead_id:lead.id,startLocal:'2026-10-04T10:00',endLocal:'2026-10-04T10:30',status:'Planned',assignee:support+'@example.test',notes:'Local planning only'};
+const demo=await ok('staff-work',demoInput,support);assert.equal(demo.googleSynced,false);
+const d=(await ok('staff-work?view=demos&month=2026-10',null,support)).items.find(d=>d.id===demo.id);assert.equal(d.start,'2026-10-03T23:00:00.000Z','Melbourne DST must be applied');
+assert.equal((await api('staff-work',{...demoInput,startLocal:'2026-10-04T02:30',endLocal:'2026-10-04T03:30'},support)).status,400,'nonexistent DST time rejected');
+assert.equal((await api('staff-work',{...demoInput,startLocal:'2026-10-04T12:00'},support)).status,400);
+let settings=(await ok('staff-work?view=connections')).settings;
+assert.equal((await api('staff-work',{action:'connections',...settings,booking_url:'https://evil.example'},'operator')).status,400);
+await ok('staff-work',{action:'connections',...settings,support_email:'support@example.test',info_email:'info@example.test',booking_url:'https://calendar.google.com/calendar/appointments/schedules/test'});
+const connection=await ok('staff-work?view=connections');assert.equal(connection.gmailConnected,false);assert.equal(connection.calendarConnected,false);assert.equal(connection.aiConnected,false);
+assert.equal((await api('staff-work',{action:'connections',...connection.settings},support)).status,403);
+console.log('PASS: staff-only access, workstream permissions, deduplicated review tasks, concurrent edits, source-change reopening, lead follow-ups, demo planning with Melbourne DST, and honest disconnected integration states.');
