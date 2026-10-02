@@ -1,13 +1,15 @@
+import {invalidMutationOrigin} from '@/app/request-origin';
+import {canAccessProject} from '@/app/project-access';
 import {NextRequest,NextResponse} from 'next/server';
 import {getChatGPTUser} from '@/app/chatgpt-auth';
 import {companyDb,getCompanyAccess} from '@/app/company-access';
 import {canAccess,fileTab} from '@/app/permissions';
-export async function POST(req:NextRequest){try{
+export async function POST(req:NextRequest){if(invalidMutationOrigin(req))return new Response(JSON.stringify({error:'Invalid request origin'}),{status:403,headers:{'content-type':'application/json'}});try{
  const user=await getChatGPTUser();if(!user)return NextResponse.json({error:'Sign in required.'},{status:401});
  const access=await getCompanyAccess(user),b:any=await req.json(),projectId=String(b.projectId||''),category=String(b.category||'');
  if(!['plans','photos','sld','specifications'].includes(category))return NextResponse.json({error:'Folders are available for drawings, photos, SLD and specifications.'},{status:400});
  if(!canAccess(access,fileTab(category),true))return NextResponse.json({error:'You need edit access to organise these files.'},{status:403});
- const db=companyDb(),project=await db.prepare('SELECT id FROM projects WHERE id=? AND owner=?').bind(projectId,access.owner).first();if(!project)return NextResponse.json({error:'Project unavailable.'},{status:404});
+ const db=companyDb(),project=await db.prepare('SELECT id FROM projects WHERE id=? AND owner=?').bind(projectId,access.owner).first();if(!project||!canAccessProject(access,projectId))return NextResponse.json({error:'Project unavailable.'},{status:404});
  const folderId=String(b.folderId||'');
  if(b.action==='move'){
  const file=await db.prepare('SELECT id FROM files WHERE id=? AND project_id=? AND owner=? AND category=?').bind(String(b.fileId||''),projectId,access.owner,category).first();if(!file)return NextResponse.json({error:'File unavailable.'},{status:404});

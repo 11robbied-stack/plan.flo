@@ -1,0 +1,3 @@
+import {build} from '../node_modules/.pnpm/esbuild@0.28.0/node_modules/esbuild/lib/main.js';
+import {resolve} from 'node:path';
+await build({entryPoints:['test-audit/run.ts'],outfile:'test-audit/run.mjs',bundle:true,platform:'node',format:'esm',packages:'external',alias:{'cloudflare:workers':resolve('test-audit/mock-env.ts'),'next/server':'next/server.js','next/navigation':'next/navigation.js','next/headers':resolve('test-audit/mock-headers.ts')},plugins:[{name:'isolate-admin-ui',setup(b){b.onResolve({filter:/admin-console$/},()=>({path:resolve('test-audit/mock-admin-console.tsx')}))}}],logLevel:'warning'});

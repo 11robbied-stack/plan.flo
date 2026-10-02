@@ -44,3 +44,14 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+
+# Local-only staging configuration and audit scratch/evidence.
+/wrangler.staging.json
+/test-audit/*
+!/test-audit/build-harness.mjs
+!/test-audit/tsconfig.app.json
+!/test-audit/run.ts
+!/test-audit/mock-admin-console.tsx
+!/test-audit/mock-env.ts
+!/test-audit/mock-headers.ts
+!/test-audit/RESULTS.json

@@ -1,15 +1,17 @@
+import {invalidMutationOrigin} from '@/app/request-origin';
+import {canAccessProject} from '@/app/project-access';
 import {NextRequest,NextResponse} from 'next/server';
 import {getChatGPTUser} from '@/app/chatgpt-auth';
 import {companyDb,getCompanyAccess} from '@/app/company-access';
 import {canAccess,fileTab} from '@/app/permissions';
-export async function POST(req:NextRequest){try{
+export async function POST(req:NextRequest){if(invalidMutationOrigin(req))return new Response(JSON.stringify({error:'Invalid request origin'}),{status:403,headers:{'content-type':'application/json'}});try{
  const user=await getChatGPTUser();if(!user)return NextResponse.json({error:'Sign in required.'},{status:401});
  const access=await getCompanyAccess(user),b:any=await req.json(),projectId=String(b.projectId||''),category=String(b.category||'');
  if(!['plans','photos'].includes(category)||!['move','rename','archive','restore'].includes(b.action))return NextResponse.json({error:'Invalid file action.'},{status:400});
  if(!canAccess(access,fileTab(category),true))return NextResponse.json({error:'Edit access is required.'},{status:403});
  if(!Array.isArray(b.ids)||!b.ids.length||b.ids.length>50||b.ids.some((id:unknown)=>typeof id!=='string'))return NextResponse.json({error:'Select between 1 and 50 files.'},{status:400});
  const ids=[...new Set<string>(b.ids)],db=companyDb(),placeholders=ids.map(()=>'?').join(',');
- const project=await db.prepare('SELECT id FROM projects WHERE id=? AND owner=?').bind(projectId,access.owner).first();if(!project)return NextResponse.json({error:'Project unavailable.'},{status:404});
+ const project=await db.prepare('SELECT id FROM projects WHERE id=? AND owner=?').bind(projectId,access.owner).first();if(!project||!canAccessProject(access,projectId))return NextResponse.json({error:'Project unavailable.'},{status:404});
  const found=await db.prepare(`SELECT id,name,archived FROM files WHERE project_id=? AND owner=? AND category=? AND id IN (${placeholders})`).bind(projectId,access.owner,category,...ids).all<{id:string;name:string;archived:number}>();
  if(found.results.length!==ids.length)return NextResponse.json({error:'One or more files are unavailable. No files were changed.'},{status:404});
  let field='',value:string|number='';

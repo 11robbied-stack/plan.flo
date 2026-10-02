@@ -1,0 +1,44 @@
+# Customer authentication and company isolation review
+
+Review branch only. No production deployment, migration, cloud provisioning, account creation, real email, secret or domain change was performed.
+
+## Provenance
+
+The GitHub main commit `80c11c6844f5978afa0643892fe6386be8f881fe` is an ancestor of the deployed Sites v54 source `2fa2b4ec0a8c66d4cec2a66de6db185d0388b3d6`. This branch starts from v54, preserving the intervening deployed equipment, platform administration and test/tag features. No `.github` workflows were present. Cloudflare preview-branch builds were separately disabled and verified by the authorized browser task before push approval. Main remains untouched.
+
+## Implemented
+
+- Email/password customer accounts through Better Auth's maintained Drizzle SQLite adapter; verified email required, no auto-login on signup/verification, HttpOnly Secure SameSite=Lax cookies on HTTPS, D1-backed sessions and rate limits, password recovery revoking sessions, explicit same-origin mutation checks. Social login, magic links, account linking and unused auth endpoints are disabled.
+- Standalone mode ignores Sites identity headers. The legacy adapter requires both `PLANFLO_AUTH_MODE=managed-sites` and `PLANFLO_DEPLOYMENT=managed-sites`; use it only behind the managed Sites ingress that strips and supplies trusted identity headers. Never enable it on a directly reachable Worker. Local Sites mock injection is off by default.
+- Independent subjects use `auth:<immutable-user-id>`. There is no email-based linking or migration of existing Sites ownership. New verified users must create a company or accept an invitation before workspace access. The existing owner-keyed tenancy model is retained, not migrated unnecessarily to another provider.
+- Invitations retain hashed, expiring, single-use tokens and verified recipient matching. Links work across signup and login. Company creation and invitation acceptance cannot silently detach an existing owner; database triggers serialize their race. Invitation emails are not auto-sent: administrators still copy and share the invitation link.
+- Company admins assign staff to explicit projects. Unassigned staff see no projects. Server routes enforce assigned projects and company ownership, including files, revisions and related records. Rob-only platform access requires both pinned immutable ID and verified email; support/billing delegation no longer grants access.
+- Generic attachments are validated against accessible company/project files and revisions. Drawing/revision uploads enforce size, extension, MIME and signature. This is not malware scanning or a full document parser.
+
+## Runtime and mail configuration
+
+`app/auth-runtime.ts` requires DB, `PLANFLO_AUTH_ORIGIN` (one exact HTTPS origin), a random secret of at least 32 characters in `BETTER_AUTH_SECRET`, and an `AUTH_EMAIL` internal service binding. Missing configuration fails closed. The mail service must accept POST JSON `{to,purpose,url}`, enqueue transactionally, and return success only after acceptance. It must provide verified sender/domain delivery and operational retries; this branch does not implement or activate a real provider. Test mail stays in memory, with no logging of tokens or production-accessible outbox.
+
+Rob's account must first be independently verified, then an authorized operator pins `PLANFLO_PLATFORM_OWNER_ID=auth:<id>` and `PLANFLO_PLATFORM_OWNER_EMAIL=<verified-email>` in server configuration. Neither value is populated here. There is no first-user promotion, email-domain promotion, or customer-editable administrator setting. Updating these settings or transferring old ownership requires a separate approved operation.
+
+Better Auth and its adapter are pinned at 1.7.5, the newest release satisfying the existing seven-day package maturity cutoff at installation. No package policy was relaxed. The Sept 30 advisory [GHSA-965c-763c-88jm](https://github.com/better-auth/better-auth/security/advisories/GHSA-965c-763c-88jm) concerns the combination of Magic Link and OAuth, both absent and blocked here. Upgrade/re-audit the pinned versions before a public release, and never add those providers without applying the upstream fix. Oversized password inputs are rejected before calling the library.
+
+References: [Drizzle adapter](https://better-auth.com/docs/adapters/drizzle), [email/password](https://better-auth.com/docs/authentication/email-password), [options](https://better-auth.com/docs/reference/options), [release notes](https://better-auth.com/changelog).
+
+## Verification
+
+Run Node 22.13+ with `pnpm test:security`, `pnpm typecheck`, and `pnpm build`.
+
+The committed `test-audit/RESULTS.json` records 206 passing checks, zero failing: original 155 security regressions plus 51 actual authentication/onboarding checks. The harness applies all migrations to in-memory SQLite with foreign keys, uses the real Better Auth handler and Drizzle D1 adapter over a local D1 test adapter, and blocks global network fetch. Its email and file adapters contain only synthetic data. It checks signup/duplicate/unverified login; email verification; secure session cookies/tampering/expiry; recovery, token reuse/expiry and session revocation; logout; rate limits; cross-origin requests and redirects; company onboarding; invitations; disabled users; Rob-only access; project access and cross-company files/records.
+
+Type check and production build pass. A separate Wrangler local-only Worker smoke check rendered `/login` (200) and returned 401 for `/api/data` despite forged Sites owner headers. The Worker was stopped after the check. The complete lifecycle is handler-tested, not yet tested through a deployed Worker, real D1 concurrency, real mail or browser end-to-end interactions. Full lint has pre-existing errors; affected files improve from 176 errors / 6 warnings to 174 errors / 5 warnings, with zero diagnostics in new application files.
+
+## Staging and release phases
+
+1. **Review this branch.** Check migrations `0024_project_members.sql` and `0025_customer_auth.sql`, identity trust and all route authorization. Keep main/automatic deployments unchanged. Acceptance: all 206 checks pass from a clean dependency install; diff contains no live IDs or secrets.
+2. **Approve isolated staging resources and mail.** `wrangler.staging.example.jsonc` is a template, not a deployment configuration. It names a separate Worker/DB/bucket/mail service and keeps workers.dev, previews and routes disabled. Copy to ignored `wrangler.staging.json` only after approval; run `pnpm staging:check`. The check validates shape, not actual resource ownership. Independently confirm IDs, isolation and access before migrations. Do not use the generated local placeholder config as a cloud deployment target.
+3. **Configure and exercise staging.** Approve secret and origin configuration, mail delivery and explicit Rob identity. Apply migrations only to confirmed staging. Use two synthetic companies, company admins, office/field staff and two projects each. Acceptance: signup/verification/login/recovery/logout complete through the browser; expired, reused and wrong-recipient links fail; owner-with-data cannot join; concurrent create/join has one winner; stale assignment edits conflict; role/disable/assignment changes take effect for already logged-in users; guessed other-company IDs, attachments, R2 objects and revisions fail; forged headers never authenticate; owner-only admin remains closed to every other identity. Benchmark password hashing and D1 rate limits under the intended Worker limits.
+4. **Approve production rollout separately.** Choose whether to retain Sites hosting or use a standalone Worker/domain; the app already targets Workers/D1/R2, so a provider migration is not presumed. Verify custom-domain routing, TLS, cookie origin, public-login access and email sender compatibility. Budget Workers compute, D1, R2 and mail using measured staging usage. No free-tier sufficiency is claimed. Configure safe limits/alerts before enabling any paid service.
+5. **Controlled cutover and rollback.** Back up existing data; explicitly map legacy ownership only through a reviewed migration if required. Assign existing staff to projects before enabling project restrictions (default is deny). Do not drop new tables or reverse ownership triggers during a routine rollback. Reverting to v54 reopens the known access gaps: restrict access first, preserve data and sessions deliberately, then investigate. Release only after the staging acceptance tests and mail deliverability pass.
+
+Single-company membership is intentional in this first version. Multi-company switching, owner transfer, MFA, mail-provider operations and a full auth-account retention/deletion policy remain follow-up work. Existing company-data deletion does not delete Better Auth identities automatically; review that policy before customer production use.

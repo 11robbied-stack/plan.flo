@@ -1,0 +1,1234 @@
+{
+  "baseline": "2fa2b4ec0a8c66d4cec2a66de6db185d0388b3d6",
+  "isolation": {
+    "database": "in-memory SQLite with real migrations",
+    "objects": "in-memory synthetic R2 adapter",
+    "identity": "explicit Sites fixture plus real Better Auth cookie sessions with synthetic email service",
+    "network": "global fetch throws",
+    "productionSecrets": "none loaded"
+  },
+  "results": [
+    {
+      "name": "anonymous data denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "anonymous upload denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "anonymous file denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "a denied platform admin GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "a denied platform admin POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "a denied platform controls GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "a denied platform controls POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "a denied platform staff GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "a denied platform staff POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "a platform nav flag hidden",
+      "result": "PASS",
+      "detail": {
+        "platformAdmin": false
+      }
+    },
+    {
+      "name": "aa denied platform admin GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "aa denied platform admin POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "aa denied platform controls GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "aa denied platform controls POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "aa denied platform staff GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "aa denied platform staff POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "aa platform nav flag hidden",
+      "result": "PASS",
+      "detail": {
+        "platformAdmin": false
+      }
+    },
+    {
+      "name": "ae denied platform admin GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "ae denied platform admin POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "ae denied platform controls GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "ae denied platform controls POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "ae denied platform staff GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "ae denied platform staff POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "ae platform nav flag hidden",
+      "result": "PASS",
+      "detail": {
+        "platformAdmin": false
+      }
+    },
+    {
+      "name": "b denied platform admin GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "b denied platform admin POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "b denied platform controls GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "b denied platform controls POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "b denied platform staff GET",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "b denied platform staff POST",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "b platform nav flag hidden",
+      "result": "PASS",
+      "detail": {
+        "platformAdmin": false
+      }
+    },
+    {
+      "name": "Rob platform overview allowed",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "Rob-only policy rejects legacy support",
+      "result": "PASS",
+      "detail": {
+        "actualPolicy": "active support operator"
+      }
+    },
+    {
+      "name": "company admin cannot grant platform role",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "role": "member"
+      }
+    },
+    {
+      "name": "company A drawing upload",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "f0950382-6a72-4fda-a4de-1309d0ef60f7"
+        }
+      }
+    },
+    {
+      "name": "company A photo upload",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "5c505d12-169f-447d-b663-a105d593d7b2"
+        }
+      }
+    },
+    {
+      "name": "upload to other company denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "preview/download returns same bytes",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "cache": "private, no-store",
+        "sandbox": "sandbox"
+      }
+    },
+    {
+      "name": "cross-company download denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "cross-company list hides records/files",
+      "result": "PASS",
+      "detail": {
+        "fileCount": 0
+      }
+    },
+    {
+      "name": "electrician assigned A1 cannot discover A2",
+      "result": "PASS",
+      "detail": {
+        "visibleProjects": [
+          "a1"
+        ],
+        "fixtureAssignment": "A1 only, seeded project_members"
+      }
+    },
+    {
+      "name": "electrician assigned A1 denied A2 drawing",
+      "result": "PASS",
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "same-project folder creation",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "9396ea32-0edd-4b71-9f1e-e4fcf08119f8"
+        }
+      }
+    },
+    {
+      "name": "same-project file move",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "cross-project folder move denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "drawing revision save",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "f849739d-225a-4bfb-8710-23b8e505ee27"
+        }
+      }
+    },
+    {
+      "name": "latest revision downloaded",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "original revision retained",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "cross-company revision listing denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "cross-company file rename denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "specialist task rejects cross-project reference",
+      "result": "PASS",
+      "detail": {
+        "status": 400,
+        "body": "{\"error\":\"A linked drawing or photo is unavailable.\"}"
+      }
+    },
+    {
+      "name": "generic record rejects cross-project reference",
+      "result": "PASS",
+      "detail": {
+        "status": 400
+      }
+    },
+    {
+      "name": "initial drawing upload rejects empty non-drawing",
+      "result": "PASS",
+      "detail": {
+        "status": 400,
+        "body": {
+          "error": "Choose a non-empty, correctly typed PDF, PNG, JPEG or WebP (photos must be images), up to 20 MB."
+        }
+      }
+    },
+    {
+      "name": "invite generated",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "wrong email invite denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "matching email accepts invite",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "invite replay denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "view-only member upload denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "existing owner workspace protected when joining",
+      "result": "PASS",
+      "detail": {
+        "acceptStatus": 409,
+        "visibleProjects": [
+          "own1"
+        ]
+      }
+    },
+    {
+      "name": "null direct admin page Rob-only",
+      "result": "PASS",
+      "detail": {
+        "consoleRendered": false
+      }
+    },
+    {
+      "name": "a direct admin page Rob-only",
+      "result": "PASS",
+      "detail": {
+        "consoleRendered": false
+      }
+    },
+    {
+      "name": "aa direct admin page Rob-only",
+      "result": "PASS",
+      "detail": {
+        "consoleRendered": false
+      }
+    },
+    {
+      "name": "ae direct admin page Rob-only",
+      "result": "PASS",
+      "detail": {
+        "consoleRendered": false
+      }
+    },
+    {
+      "name": "b direct admin page Rob-only",
+      "result": "PASS",
+      "detail": {
+        "consoleRendered": false
+      }
+    },
+    {
+      "name": "be direct admin page Rob-only",
+      "result": "PASS",
+      "detail": {
+        "consoleRendered": false
+      }
+    },
+    {
+      "name": "rob direct admin page Rob-only",
+      "result": "PASS",
+      "detail": {
+        "consoleRendered": true
+      }
+    },
+    {
+      "name": "support direct admin page Rob-only",
+      "result": "PASS",
+      "detail": {
+        "consoleRendered": false
+      }
+    },
+    {
+      "name": "anonymous platform admin denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "anonymous platform controls denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "anonymous platform staff denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "valid PDF upload and download byte equality",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "valid PNG upload and download byte equality",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "valid task saves",
+      "result": "PASS",
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "b8f89836-918c-412e-be35-320dfea477ec"
+        }
+      }
+    },
+    {
+      "name": "file archive stored",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "archive still downloadable (current semantics)",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "file restore stored",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "disabled member file denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "disabled member data denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "expired invite rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "revoked invite rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company B electrician cannot download A file",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company B electrician cannot upload to A",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "navigation source gates platform link",
+      "result": "PASS",
+      "detail": {
+        "type": "source assertion plus exercised access flags; not browser rendering"
+      }
+    },
+    {
+      "name": "unassigned project denied by budget",
+      "result": "PASS",
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "unassigned project denied by safety",
+      "result": "PASS",
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "unassigned project denied by equipment",
+      "result": "PASS",
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "unassigned project denied by om",
+      "result": "PASS",
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "unassigned project denied by tasks",
+      "result": "PASS",
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "unassigned project denied by revisions",
+      "result": "PASS",
+      "detail": {
+        "status": 403
+      }
+    },
+    {
+      "name": "member cannot self assign",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned upload blocked",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned generic save blocked",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned project setup blocked",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned folder creation blocked",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned revision upload blocked",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "timesheet list scoped to assigned projects",
+      "result": "PASS",
+      "detail": {
+        "ids": [
+          "a1"
+        ]
+      }
+    },
+    {
+      "name": "schedule entries and project picker scoped",
+      "result": "PASS",
+      "detail": {
+        "entries": [
+          "a1"
+        ],
+        "projects": [
+          "a1"
+        ]
+      }
+    },
+    {
+      "name": "unassigned timesheet save denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned schedule delete denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned schedule copy denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned schedule save denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "task picker/assets scoped",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "daily review list scoped",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "daily review unassigned filter denied",
+      "result": "PASS",
+      "detail": {
+        "status": 404
+      }
+    },
+    {
+      "name": "reminder results scoped",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "company admin can inspect assignments",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company admin cannot assign foreign project",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company admin cannot edit foreign member",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company admin assigns second project",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "stale assignments rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "new assignment permits drawing",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "assignment removal takes effect next request",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company admin still sees all own projects",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company admin can download unassigned own-company file",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "other owner sees only own company",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "reject invalid drawing fake.pdf application/pdf",
+      "result": "PASS",
+      "detail": {
+        "status": 400,
+        "objectsUnchanged": true
+      }
+    },
+    {
+      "name": "reject invalid drawing fake.png image/png",
+      "result": "PASS",
+      "detail": {
+        "status": 400,
+        "objectsUnchanged": true
+      }
+    },
+    {
+      "name": "reject invalid drawing x.exe application/pdf",
+      "result": "PASS",
+      "detail": {
+        "status": 400,
+        "objectsUnchanged": true
+      }
+    },
+    {
+      "name": "reject invalid drawing wrong.pdf image/png",
+      "result": "PASS",
+      "detail": {
+        "status": 400,
+        "objectsUnchanged": true
+      }
+    },
+    {
+      "name": "reject invalid drawing empty.pdf application/pdf",
+      "result": "PASS",
+      "detail": {
+        "status": 400,
+        "objectsUnchanged": true
+      }
+    },
+    {
+      "name": "invalid revision rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "generic attachment rejects cross-company",
+      "result": "PASS",
+      "detail": {
+        "status": 400
+      }
+    },
+    {
+      "name": "generic attachment rejects nested cross-project",
+      "result": "PASS",
+      "detail": {
+        "status": 400
+      }
+    },
+    {
+      "name": "generic attachment rejects bad ref type",
+      "result": "PASS",
+      "detail": {
+        "status": 400
+      }
+    },
+    {
+      "name": "generic attachment rejects forged revision",
+      "result": "PASS",
+      "detail": {
+        "status": 400
+      }
+    },
+    {
+      "name": "valid generic drawing markup preserved",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "assigned project still requires drawing permission",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "generic record cannot attach forbidden-tab file",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "Rob cannot enable delegated operator",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "missing platform subject fails closed",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "wrong platform subject denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "matching email alone cannot elevate",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "wrong email cannot elevate with matching subject",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "legacy operator nav flag hidden",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "database rejects cross-company assignment",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "settings-only owner cannot lose workspace",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "database blocks stale personal-workspace write after join",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "database blocks bypass/concurrent join by workspace owner",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "populated daily review excludes unassigned activity",
+      "result": "PASS",
+      "detail": {
+        "items": 1
+      }
+    },
+    {
+      "name": "unassigned daily review mutation denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "populated reminders exclude unassigned project",
+      "result": "PASS",
+      "detail": {
+        "items": 1
+      }
+    },
+    {
+      "name": "unassigned budget write denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned equipment assignment denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned safety save denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned O&M save denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned task save denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned feedback project context denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "customer cannot call platform export",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company admin cannot call platform export",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "null assignment body rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "assignment mutation requires same origin",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "mixed-company assignment leaves existing set unchanged",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "Rob company export includes assignment records",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "unassigned member defaults to no project data",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unassigned member cannot retrieve known file",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "standalone ignores forged Sites owner headers",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "customer signup accepted",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "verification email captured only by test adapter",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "signup creates no session",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unverified login denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "email verification succeeds",
+      "result": "PASS",
+      "detail": {
+        "status": 302
+      }
+    },
+    {
+      "name": "stored email verified",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "verified customer login succeeds",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "session cookie secure HttpOnly SameSite",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "server session resolves namespaced immutable identity",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "customer cannot become Rob via headers",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "verified customer blocked until company onboarding",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "company onboarding succeeds",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "onboarding cannot overwrite company",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "onboarded owner gains own workspace",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "session tampering denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "cross-origin signup denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "disabled auth plugins inaccessible",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "oversized password rejected before hashing",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "duplicate signup uses generic success",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "duplicate signup retains one user",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "password recovery request succeeds",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "recovery delivered to synthetic mailbox",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "password reset succeeds",
+      "result": "PASS",
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "password reset revokes existing session",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "recovery token cannot be reused",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "old password no longer works",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "new password works",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "logout succeeds",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "logout invalidates server session",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unknown email recovery stays generic",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "invalid recovery token rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "database rate limiter throttles repeated login",
+      "result": "PASS",
+      "detail": {
+        "codes": [
+          401,
+          401,
+          401,
+          401,
+          401,
+          429,
+          429
+        ]
+      }
+    },
+    {
+      "name": "verified customer accepts email-matching invite",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "joined member belongs only to inviting company",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "joined staff cannot create personal company",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "new invited staff has no projects by default",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "standalone staff cannot open other company file",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "reused invitation rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "disabling member immediately blocks existing session",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "unconfigured email fails closed",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "password stored as hash not plaintext",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "cross-origin workspace mutation denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "missing origin workspace mutation denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "external recovery redirect rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "external verification callback rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "malformed verification token rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "expired recovery link cannot issue reset token",
+      "result": "PASS",
+      "detail": {
+        "status": 302
+      }
+    },
+    {
+      "name": "expired server session denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "login return cannot escape origin",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "login return preserves invitation",
+      "result": "PASS",
+      "detail": {}
+    }
+  ],
+  "workerSmoke": [
+    {
+      "path": "/login",
+      "status": 200,
+      "hasLoginForm": true,
+      "spoofHeaders": true
+    },
+    {
+      "path": "/",
+      "status": 200,
+      "hasLoginForm": null,
+      "spoofHeaders": true
+    },
+    {
+      "path": "/api/data",
+      "status": 401,
+      "hasLoginForm": null,
+      "spoofHeaders": true
+    }
+  ]
+}

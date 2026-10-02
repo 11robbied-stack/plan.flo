@@ -1,7 +1,8 @@
+import {isPlatformOwner,platformOwnerIdentity} from './platform-owner';
 import {platformDb,operatorEmails} from './platform-store';
 export type OperatorRole='owner'|'support'|'billing';
-export async function operatorRole(user:{email:string}):Promise<OperatorRole|null>{const email=user.email.trim().toLowerCase();if(operatorEmails().includes(email))return 'owner';const row=await platformDb().prepare('SELECT role FROM platform_operators WHERE email=? AND active=1').bind(email).first<{role:string}>();return row&&['support','billing'].includes(row.role)?row.role as OperatorRole:null;}
-export async function allOperatorEmails(){return [...new Set([...operatorEmails(),...(await platformDb().prepare('SELECT email FROM platform_operators WHERE active=1').all<{email:string}>()).results.map(r=>r.email)])]}
+export async function operatorRole(user:{userId?:string;email:string}):Promise<OperatorRole|null>{return isPlatformOwner(user)?'owner':null;}
+export async function allOperatorEmails(){return operatorEmails();}
 export function canRead(role:OperatorRole,view:string){return role==='owner'||role==='support'&&['tickets','ticket'].includes(view)||role==='billing'&&['billing','billing-account'].includes(view)}
-export async function protectedCompany(owner:string){const emails=await allOperatorEmails();return !!await platformDb().prepare(`SELECT id FROM platform_users WHERE owner=? AND lower(email) IN (${emails.map(()=>'?').join(',')||"''"})`).bind(owner,...emails).first()}
+export async function protectedCompany(owner:string){const identity=platformOwnerIdentity();return !!identity&&!!await platformDb().prepare('SELECT id FROM platform_users WHERE owner=? AND id=? AND lower(email)=?').bind(owner,identity.userId,identity.email).first();}
 export async function logAdmin(actor:string,action:string,owner:string,detail:unknown){await platformDb().prepare('INSERT INTO platform_audit(id,actor,action,target,owner,detail,created) VALUES(?,?,?,?,?,?,?)').bind(crypto.randomUUID(),actor,action,owner,owner,JSON.stringify(detail),new Date().toISOString()).run()}

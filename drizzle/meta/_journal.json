@@ -169,6 +169,20 @@
       "when": 1790816288033,
       "tag": "0023_staff_ticket_tasks",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1790856189991,
+      "tag": "0024_project_members",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1790857431800,
+      "tag": "0025_customer_auth",
+      "breakpoints": true
     }
   ]
 }

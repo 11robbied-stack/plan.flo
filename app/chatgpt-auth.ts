@@ -1,3 +1,4 @@
+import {customerAuth,managedSitesAuth} from "./auth-runtime";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -20,6 +21,12 @@ const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
+  if(!managedSitesAuth()){
+    try{const session=await customerAuth().api.getSession({headers:requestHeaders});
+      if(!session?.user.emailVerified)return null;
+      return {userId:`auth:${session.user.id}`,email:session.user.email,displayName:session.user.name,fullName:session.user.name};
+    }catch{return null;}
+  }
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);
   if (!userId || !email) return null;
@@ -50,12 +57,12 @@ export async function requireChatGPTUser(
 
 export function chatGPTSignInPath(returnTo: string): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
-  return `${SIGN_IN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+  return `${managedSitesAuth()?SIGN_IN_PATH:"/login"}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
 export function chatGPTSignOutPath(returnTo = "/"): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
-  return `${SIGN_OUT_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+  return `${managedSitesAuth()?SIGN_OUT_PATH:"/logout"}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
 function safeRelativeReturnPath(value: string): string {
