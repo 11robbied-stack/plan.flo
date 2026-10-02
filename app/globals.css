@@ -208,3 +208,10 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 
 .project-ribbon{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}.overview-ribbon.project-ribbon:empty{display:none}.progress-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.progress-grid>.stage-progress-card{grid-column:1/-1}.app-settings-fields{border:0;margin:0;padding:0;min-width:0}
 .test-tag-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin:20px 0}.test-tag-summary button{display:grid;text-align:left;gap:8px;padding:20px;border:1px solid #dbe3ef;border-radius:18px;background:var(--card,#fff);color:var(--foreground,#172337)}.test-tag-summary button strong{font-size:26px}.test-tag-summary button[aria-pressed=true]{border-color:#2563ff;box-shadow:0 0 0 1px #2563ff}.test-tag-tools{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}.test-tag-tools label{flex:1;min-width:170px}.test-tag-tools button{margin-bottom:2px}
+
+/* Tenant branding in the header; account controls remain in the sidebar. */
+.company-header-logo{display:flex;align-items:center;justify-content:center;flex:0 0 auto;max-width:150px;height:46px;padding:5px 8px;border-radius:8px;background:#fff}
+.company-header-logo img{display:block;max-width:134px;max-height:36px;width:auto;height:auto;object-fit:contain}
+.company-header-name{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600;color:var(--foreground)}
+@media(max-width:850px){.top-search{width:180px}.top-actions{gap:10px}.crumb{min-width:0}.crumb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+@media(max-width:620px){.company-header-logo{max-width:90px;height:40px;padding:4px 6px}.company-header-logo img{max-width:78px;max-height:32px}.company-header-name{max-width:90px;font-size:12px}.top-actions{gap:6px}}
