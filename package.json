@@ -14,7 +14,8 @@
     "db:generate": "drizzle-kit generate",
     "test:security": "node test-audit/build-harness.mjs && node test-audit/run.mjs",
     "typecheck": "tsc -p test-audit/tsconfig.app.json",
-    "staging:check": "node scripts/check-staging.mjs"
+    "staging:check": "node scripts/check-staging.mjs",
+    "test:browser": "node test-audit/browser-acceptance.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

@@ -55,3 +55,6 @@ next-env.d.ts
 !/test-audit/mock-env.ts
 !/test-audit/mock-headers.ts
 !/test-audit/RESULTS.json
+
+!/test-audit/browser-acceptance.mjs
+!/test-audit/BROWSER-RESULTS.json

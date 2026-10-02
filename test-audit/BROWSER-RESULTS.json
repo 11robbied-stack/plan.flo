@@ -1,0 +1,296 @@
+{
+  "date": "2026-10-03",
+  "environment": "Headless installed Chrome, local Miniflare/workerd, disposable D1/R2, synthetic email captured in memory; external HTTP blocked",
+  "results": [
+    {
+      "name": "isolated local Worker and migrations start",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser signup queues synthetic verification",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser verified login reaches onboarding",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser onboarded workspace renders",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:5201/",
+        "errors": []
+      }
+    },
+    {
+      "name": "browser creates project",
+      "pass": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "name": "owner creates second project",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser uploads real PDF to local R2",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "ad6f5bc1-043d-4654-84f4-4cf8a9f5bcf6"
+        }
+      }
+    },
+    {
+      "name": "drawing preview/download returns exact original bytes",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser adds drawing revision",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "b002df25-c454-4377-ac0d-47d320fafb77"
+        }
+      }
+    },
+    {
+      "name": "drawing revision history contains original and replacement",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "task with drawing attachment saves",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "e96c6937-bfb8-4e6e-a6a6-362d99406f5f"
+        }
+      }
+    },
+    {
+      "name": "time record saves through authenticated browser",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "2ebf791d-c526-4253-a822-00efa016a708"
+        }
+      }
+    },
+    {
+      "name": "rfi record saves through authenticated browser",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "c31cdde3-f087-4e56-b9e8-867981932c3c"
+        }
+      }
+    },
+    {
+      "name": "variation record saves through authenticated browser",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "id": "cc40dde9-0646-435e-8c3b-c603cf0a37ae"
+        }
+      }
+    },
+    {
+      "name": "schedule shift saves through authenticated browser",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "ok": true,
+          "count": 1
+        }
+      }
+    },
+    {
+      "name": "saved project records reload",
+      "pass": true,
+      "detail": {
+        "kinds": [
+          "variation",
+          "rfi",
+          "time",
+          "task"
+        ]
+      }
+    },
+    {
+      "name": "company owner cannot use platform administration",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "Browser Owner B receives test verification",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "second company creates independent project",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "company B cannot list company A data",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "company B cannot download company A drawing",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "company owner creates invitation",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "Browser Staff receives test verification",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser signup preserves invitation and accepts it",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "invited staff starts with no project access",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "owner assigns one staff project",
+      "pass": true,
+      "detail": {
+        "status": 200,
+        "body": {
+          "ok": true
+        }
+      }
+    },
+    {
+      "name": "existing staff session receives only assigned project",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "staff cannot self-promote or invite",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "staff cannot access platform admin",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "staff cannot read other project records",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "staff disable blocks already signed-in browser",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "pinned synthetic Rob can access platform administration",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser logout invalidates session",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser recovery captures test email",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser recovery and new password login complete",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "Tasks project screen renders",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "Time project screen renders",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "RFIs project screen renders",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "Variations project screen renders",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "Drawings project screen renders",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "drawing preview iframe points to authenticated file route",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "PDF comparison renders real drawing pixels",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "workspace schedule screen renders",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "workspace timesheets screen renders",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "visible workspace account link completes logout",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "browser routes produce no JavaScript errors",
+      "pass": true,
+      "detail": {
+        "errors": []
+      }
+    }
+  ],
+  "limitations": [
+    "Native embedded PDF plugin appears dark in headless screenshots, including a local diagnostic without CSP; visible native preview needs headed-browser acceptance.",
+    "No real email delivery, deployed staging, real Cloudflare bindings, payment or third-party integrations tested.",
+    "Core record saves use authenticated browser fetch calls; screen navigation, account lifecycle, project creation and invitation acceptance use UI controls."
+  ]
+}
