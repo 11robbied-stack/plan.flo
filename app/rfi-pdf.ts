@@ -1,28 +1,49 @@
-import {PDFDocument,StandardFonts,rgb} from 'pdf-lib';
-export type RfiData={number:string;title:string;reference:string;status:string;priority:string;responsibility:string;submitted:string;due:string;costImpact:string;programImpact:string;responseReference:string;requests:string[];solutions:string[];notes:string;recipientCompany:string;recipientName:string;recipientAddress:string;recipientEmail:string;location:string};
-export type CompanyData={company:string;abn:string;address:string;email:string;phone:string;logoFileId:string;colour:string};
-const fmt=(s:string)=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?`${s.slice(8,10)}/${s.slice(5,7)}/${s.slice(0,4)}`:s;
-const clean=(s:string)=>String(s||'').replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"').replace(/[\u2013\u2014]/g,'-').replace(/[^\x20-\x7e\u00a0-\u00ff]/g,' ');
-const hex=(s:string)=>{const h=/^#[0-9a-f]{6}$/i.test(s)?s:'#1769f4';return rgb(parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255)};
-export async function downloadRfiPdf(d:RfiData,p:{name:string;number:string;address:string;builder:string;client:string},c:CompanyData){
- const pdf=await PDFDocument.create();const regular=await pdf.embedFont(StandardFonts.Helvetica),bold=await pdf.embedFont(StandardFonts.HelveticaBold);const blue=hex(c.colour),ink=rgb(.09,.16,.25),muted=rgb(.39,.47,.57),rule=rgb(.84,.88,.92);const W=595,H=842,L=43,R=552;let page=pdf.addPage([W,H]);let y=H-48;
- function newPage(){page=pdf.addPage([W,H]);y=H-48;page.drawText(clean(`${d.number||'RFI'}  |  ${p.name}`),{x:L,y,font:bold,size:9,color:blue});page.drawLine({start:{x:L,y:y-10},end:{x:R,y:y-10},thickness:1,color:rule});y-=35}
- function need(h:number){if(y-h<55)newPage()}
- function text(t:string,x:number,yy:number,size=10,font=regular,color=ink){page.drawText(clean(t),{x,y:yy,size,font,color})}
- function wrap(t:string,width:number,size=10,font=regular){const lines:string[]=[];for(const paragraph of clean(t).split('\n')){let line='';for(const word of paragraph.split(/\s+/)){if(!word)continue;const next=line?line+' '+word:word;if(font.widthOfTextAtSize(next,size)>width&&line){lines.push(line);line=word}else line=next}lines.push(line||' ')}return lines}
- function para(t:string,indent=0,size=10){const lines=wrap(t,R-L-indent,size);for(const line of lines){need(16);text(line,L+indent,y,size);y-=15}}
- function label(s:string){need(28);text(s.toUpperCase(),L,y,9,bold,blue);y-=17}
- function pair(a:string,b:string){need(23);text(a,L,y,9,bold,muted);const lines=wrap(b||'—',R-235,9);for(let i=0;i<lines.length;i++){if(i)need(14);text(lines[i],235,y,9,regular,ink);if(i<lines.length-1)y-=14}y-=22;page.drawLine({start:{x:L,y:y+9},end:{x:R,y:y+9},thickness:.5,color:rule})}
- // Company letterhead
- if(c.logoFileId){try{const res=await fetch(`/api/file/${encodeURIComponent(c.logoFileId)}`);if(res.ok){const bytes=await res.arrayBuffer();const mime=res.headers.get('content-type')||'';const image=mime.includes('png')?await pdf.embedPng(bytes):await pdf.embedJpg(bytes);const scale=Math.min(160/image.width,57/image.height,1);page.drawImage(image,{x:L,y:H-105,width:image.width*scale,height:image.height*scale})}}catch{/* Letterhead retains company details when logo is unavailable. */}}
- text(c.company||'Company',R-(Math.min(235,bold.widthOfTextAtSize(clean(c.company||'Company'),15))),H-52,15,bold,ink);
- let cy=H-69;for(const line of [c.abn?`ABN ${c.abn}`:'',c.address,c.phone,c.email].filter(Boolean)){for(const part of wrap(line,235,8)){text(part,R-regular.widthOfTextAtSize(part,8),cy,8,regular,muted);cy-=12}}
- y=Math.min(H-123,cy-17);page.drawLine({start:{x:L,y},end:{x:R,y},thickness:2,color:blue});y-=29;
- text('REQUEST FOR INFORMATION',L,y,10,bold,blue);y-=29;text(d.number||'RFI',L,y,23,bold,ink);y-=24;para(d.title||'Untitled RFI',0,14);y-=14;
- label('Project & correspondence');pair('Project',p.name);pair('Project number',p.number);pair('Project address',p.address);pair('To',d.recipientCompany||p.builder||p.client);if(d.recipientName)pair('Attention',d.recipientName);if(d.recipientAddress)pair('Recipient address',d.recipientAddress);if(d.recipientEmail)pair('Recipient email',d.recipientEmail);pair('Date submitted',fmt(d.submitted)||new Date().toLocaleDateString('en-AU'));pair('Response required',fmt(d.due));pair('Reference document',d.reference);if(d.location)pair('Location',d.location);pair('Priority',d.priority||'Normal');pair('Responsibility',d.responsibility);if(d.costImpact)pair('Cost impact',d.costImpact);if(d.programImpact)pair('Program impact',d.programImpact);if(d.responseReference)pair('Response reference',d.responseReference);
- y-=12;label('Request for information');(d.requests.length?d.requests:['']).forEach((item,i)=>{need(45);text(`${i+1}.`,L,y,10,bold,blue);para(item||' ',22);y-=9});
- if(d.solutions.some(x=>x.trim())){y-=5;label('Proposed solution');d.solutions.filter(x=>x.trim()).forEach((item,i)=>{need(40);text(`${i+1}.`,L,y,10,bold,blue);para(item,22);y-=9})}
- y-=9;label('Builder response');need(100);page.drawRectangle({x:L,y:y-82,width:R-L,height:83,borderColor:rule,borderWidth:1});y-=102;
- const pages=pdf.getPages();pages.forEach((pg,i)=>{pg.drawLine({start:{x:L,y:40},end:{x:R,y:40},thickness:.5,color:rule});pg.drawText(clean(`${c.company||'Company'}  |  ${d.number||'RFI'}  |  ${p.name}`),{x:L,y:27,font:regular,size:8,color:muted});pg.drawText(`${i+1} / ${pages.length}`,{x:R-27,y:27,font:regular,size:8,color:muted})});
- const bytes=await pdf.save();const blob=new Blob([new Uint8Array(bytes)],{type:'application/pdf'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`${(d.number||'RFI').replace(/[^a-z0-9-_]/gi,'_')}_${p.name.replace(/[^a-z0-9-_]/gi,'_')}.pdf`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)
+import { PdfReport, downloadPdf, pdfDate, projectParty, type PdfProject } from './pdf-report';
+export type RfiData = {
+    number: string;
+    title: string;
+    reference: string;
+    status: string;
+    priority: string;
+    responsibility: string;
+    submitted: string;
+    due: string;
+    costImpact: string;
+    programImpact: string;
+    responseReference: string;
+    requests: string[];
+    solutions: string[];
+    notes: string;
+    recipientCompany: string;
+    recipientName: string;
+    recipientAddress: string;
+    recipientEmail: string;
+    location: string;
+};
+export type CompanyData = {
+    company: string;
+    abn: string;
+    address: string;
+    email: string;
+    phone: string;
+    logoFileId: string;
+    colour: string;
+};
+export async function buildRfiPdf(d: RfiData, p: PdfProject, c: CompanyData) {
+    const r = await PdfReport.create('Request for information', d.number || 'RFI', { company: c, project: p });
+    r.intro(d.status, [['Submitted', pdfDate(d.submitted)], ['Response required', pdfDate(d.due)]]);
+    const projectBuilder = projectParty(p);
+    const builder = d.recipientCompany && d.recipientCompany !== projectBuilder.name ? {} : projectBuilder;
+    r.parties({ ...builder, name: d.recipientCompany || builder.name, contact: d.recipientName || builder.contact, address: d.recipientAddress || builder.address, email: d.recipientEmail || builder.email });
+    r.heading(d.title || 'Untitled RFI');
+    r.metadata([['Reference document', d.reference], ['Priority', d.priority || 'Normal'], ['Location', d.location], ['Responsibility', d.responsibility], ['Cost impact', d.costImpact], ['Program impact', d.programImpact], ['Response reference', d.responseReference]]);
+    r.heading('Request for information');
+    (d.requests.length ? d.requests : ['Not entered']).forEach((s, i) => { r.paragraph(`${i + 1}. ${s}`); r.y -= 8; });
+    if (d.solutions.some(s => s.trim())) {
+        r.heading('Proposed solution');
+        d.solutions.filter(s => s.trim()).forEach((s, i) => { r.paragraph(`${i + 1}. ${s}`); r.y -= 8; });
+    }
+    r.response();
+    return r.save();
 }
+export async function downloadRfiPdf(d: RfiData, p: PdfProject, c: CompanyData) { downloadPdf(await buildRfiPdf(d, p, c), `${d.number || 'RFI'}_${p.name || 'Project'}`); }
