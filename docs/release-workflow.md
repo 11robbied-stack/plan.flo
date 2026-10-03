@@ -6,7 +6,7 @@ Use `https://github.com/11robbied-stack/plan.flo.git` as the canonical source. A
 
 Develop on a feature branch; test the exact candidate on staging; promote that same reviewed candidate through an approved PR to main. Do not merge main, push, deploy or alter build settings without the requested approval. Until the Sites authoring path is retired by an explicit decision, reconcile its latest version/commit before each release. Never silently overwrite newer Sites work with an older auth branch.
 
-Cloudflare Git builds previously failed during initialization before cloning; local direct deployment worked. These scripts validate application artifacts. They do not repair that external build service. Keep direct deployment as a reviewed fallback; do not create a second competing source branch. Connecting/reconfiguring CI, provider permissions or secrets is separate work.
+Cloudflare Git builds previously failed during initialization before cloning; a later successful build of `0ea88f7` was verified against active version `69ca3d8f-7efa-4d89-9b79-40f3c4a640a1`. The automatic path works, but its original plain build command did not run release gates. Use the reviewed [self-contained CI settings](cloudflare-release-gates.md) for future updates. Keep direct deployment as a reviewed fallback; do not create a second competing source branch. Provider permissions and secrets remain separate work.
 
 ## Repeatable commands
 
@@ -20,7 +20,7 @@ pnpm release:verify
 
 `check` verifies applied migration hashes, journal order, an isolated 0026-to-0027 data-preservation fixture, staging configuration, TypeScript, security/auth, invoice/PO/PDF and synthetic mail tests. `prepare` requires a clean committed tree, repeats checks, builds, runs the local browser suite, and writes `dist/release-manifest.json`. `verify` rejects dirty/different source or changed/missing artifacts/configuration. It does not contact Cloudflare or verify remote migration state. Test fixtures use temporary/in-memory D1/R2, synthetic identities/mail and blocked outbound requests.
 
-Browser execution requires local Chrome and Playwright. Set `PLANFLO_CHROME_PATH` and `PLANFLO_PLAYWRIGHT_MODULE` if not on their defaults. Local Worker tests require loopback binding permissions. Do not substitute production credentials for missing test configuration.
+Browser execution uses the exact pinned Playwright dependency. Run `pnpm browser:install` on macOS, or `pnpm exec playwright install --with-deps chromium` on Linux, before preparing the release. Explicit external Chrome/Playwright overrides remain available for diagnostics but are unnecessary for a clean clone. Local Worker tests require loopback binding permissions. Do not substitute production credentials for missing test configuration.
 
 The workspace sidebar and unauthenticated `/api/version` expose only a short commit identifier (with `-dirty` for development builds). Before/after deployment, compare that ID with the manifest. No secrets, branch paths, user information or provider identifiers are exposed.
 
