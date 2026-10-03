@@ -5,8 +5,8 @@
 ## Observed locally
 
 - Saved implementation commit `6dc1c3b758979a76bc45289a8af41c72c9e9bb6a` was clean at resumption. The follow-up replaces the unreliable native PDF embed with PDF.js canvas rendering; see the PDF fix below.
-- Existing 206 security/handler tests pass again; type check and production build pass again.
-- Added 54 passing browser/Worker checks (both headless and headed Chrome) using the installed Chrome in its own headless process, local Miniflare/workerd, fresh disposable D1/R2 and an in-memory email service. No user browser profile, Safari session, production data or provider credentials were used. External HTTP requests were blocked.
+- Existing 225 security/handler tests pass again; type check and production build pass again.
+- Added 59 passing browser/Worker checks (both headless and headed Chrome) using the installed Chrome in its own headless process, local Miniflare/workerd, fresh disposable D1/R2 and an in-memory email service. No user browser profile, Safari session, production data or provider credentials were used. External HTTP requests were blocked.
 - UI-driven checks: signup, email verification, sign-in, company creation, project creation, invitation continuation through signup and acceptance, password recovery and new-password login, visible account/logout flow, and core screen navigation.
 - Authenticated browser requests: tasks with drawings, schedule shifts, timesheets, RFIs and draft variations save/reload; PDF upload, exact-byte download and revision history work. These saves were not all manually entered through each feature's form.
 - Two synthetic companies remain isolated; guessed other-company file IDs return 404. Staff default to no projects, receive exactly the assigned project, cannot promote themselves or access platform administration, and lose access immediately when disabled. A separately pinned synthetic Rob identity can access platform administration; company owners cannot.
@@ -32,13 +32,13 @@ No purchase or custom domain is inherently required to perform a separately appr
 
 ## Reproduce the browser run
 
-Build first. `pnpm test:browser` uses Playwright from the existing environment (or an explicitly supplied `PLANFLO_PLAYWRIGHT_MODULE`) and Chrome from `PLANFLO_CHROME_PATH`; it does not install either. It binds only `127.0.0.1:5201`, creates synthetic fixtures, and disposes the browser and Worker afterward. `pnpm test:security` reruns the independent 206-check harness.
+Build first. `pnpm test:browser` uses Playwright from the existing environment (or an explicitly supplied `PLANFLO_PLAYWRIGHT_MODULE`) and Chrome from `PLANFLO_CHROME_PATH`; it does not install either. It binds only `127.0.0.1:5201`, creates synthetic fixtures, and disposes the browser and Worker afterward. `pnpm test:security` reruns the independent 225-check harness.
 
 The afternoon target depends on resolving the above external blockers and passing deployed acceptance. Local results do not support claiming that live customer signup or mail is working yet.
 
 ## PDF preview fix
 
-`app/drawing-pdf.tsx` loads the same authenticated file endpoint using the already-installed PDF.js package and worker. It renders a selected page to canvas with loading and error states. Page controls reset on drawing/revision changes. New markups include their page; older markups without a page stay on page one. An explicit same-origin download link preserves the original bytes. Existing company/project/revision authorization and response security headers are unchanged. Build/type check, all 206 security checks and 54 browser checks pass. New-file lint is clean; workspace lint remains at its baseline 30 errors / 25 warnings.
+`app/drawing-pdf.tsx` loads the same authenticated file endpoint using the already-installed PDF.js package and worker. It renders a selected page to canvas with loading and error states. Page controls reset on drawing/revision changes. New markups include their page; older markups without a page stay on page one. An explicit same-origin download link preserves the original bytes. Existing company/project/revision authorization and response security headers are unchanged. Build/type check, all 225 security checks and 59 browser checks pass. New-file lint is clean; workspace lint remains at its baseline 30 errors / 25 warnings.
 
 ## Exact isolated staging approval bundle
 
@@ -47,7 +47,7 @@ The afternoon target depends on resolving the above external blockers and passin
 3. Set staging variables `PLANFLO_AUTH_MODE=standalone`, `PLANFLO_DEPLOYMENT=staging`, and `PLANFLO_AUTH_ORIGIN=<exact approved HTTPS origin>`. Approve creation of a random secret in `BETTER_AUTH_SECRET`; never commit its value. Do not enable the managed-sites identity adapter on this Worker.
 4. Create an internal mail Worker `planflo-staging-mail`, bound to the app as `AUTH_EMAIL`. Current app contract is POST `{to,purpose,url}` with success only after accepted delivery/queueing. A real provider adapter, retry mechanism and sender configuration still need implementation after provider selection. No public mock mailbox or verification bypass is acceptable.
 5. Email choices: reuse an existing authorized provider with a verified sender (smallest setup); otherwise review a new Resend or Postmark account/verified sender and approve its credentials/domain steps before implementing that adapter. Neither provider is configured. Reference APIs: https://resend.com/docs/api-reference/emails/send-email and https://postmarkapp.com/developer/api/email-api . Test real delivery only to approved recipients.
-6. Approve applying all migrations to the confirmed empty staging D1, including 0024 project assignments and 0025 customer auth. Test synthetic companies first. No production migration or old-account linking is included.
+6. Approve applying all migrations to the confirmed empty staging D1, including 0024 project assignments and 0025 customer auth and 0026 registration profiles. Test synthetic companies first. No production migration or old-account linking is included.
 7. Rob completes verified signup in staging; then approve pinning `PLANFLO_PLATFORM_OWNER_ID=auth:<actual user id>` and `PLANFLO_PLATFORM_OWNER_EMAIL=<verified email>`. Keep platform administration closed until both match.
 8. Approve staging deployment and its access scope, then run real-mail/browser/isolation acceptance on that exact URL. Production cutover remains a separate reviewed action.
 
@@ -61,6 +61,20 @@ After confirming the new database is empty and isolated, copy the reviewed stagi
 pnpm exec wrangler d1 migrations apply DB --config wrangler.staging.json --remote
 ```
 
-This applies every migration in `drizzle/` from `0000` through `0025`; do not apply only the last two to an empty database. Before running it, use a read-only database info/list check to confirm account, name, UUID and binding point exclusively to staging. Afterward verify migrations applied and expected auth/company/project tables exist; no production migration is part of this command's authorization.
+This applies every migration in `drizzle/` from `0000` through `0026`; do not apply only the last two to an empty database. Before running it, use a read-only database info/list check to confirm account, name, UUID and binding point exclusively to staging. Afterward verify migrations applied and expected auth/company/project tables exist; no production migration is part of this command's authorization.
 
 Build source from `review/customer-auth-isolation`, not the different Desktop checkout's main branch. A deployment is a later separately reviewed step, not a side effect of creating the DB or applying this schema. If email/origin/secret configuration remains missing, the app deliberately refuses independent authentication; successful build/database setup alone is not launch acceptance.
+
+## Requested www.planflo.app registration experience
+
+The standalone logged-out root now renders sign-in plus Create account directly. This was verified locally; live www.planflo.app routing, TLS and DNS are owned by the separate browser/deployment task and have not been claimed working here. Set PLANFLO_AUTH_ORIGIN to the exact approved canonical HTTPS host when deploying (for the requested canonical host: https://www.planflo.app). Any apex redirect should lead to that host before authentication; do not split cookie/login origins inadvertently.
+
+Signup captures Name (first name), Surname, Business/sole trader name, ABN, Address, Email address, Phone number, REC and password. Names/contact/business drafts persist on auth_user; the name displayed in the app combines first name and surname. Draft fields are excluded from the auth session response. Company onboarding after verified-email login is prefilled and confirmed once, copying business/contact/REC fields to the existing owner-keyed company settings. REC is visible in company details as supplied, not verified. Repeat signup cannot replace an existing verified profile; repeat company onboarding cannot overwrite a company.
+
+Design choice: self-service business signup requires the requested fields, including REC. Staff signup reached through an invitation requires personal name/surname/email/phone/password; business/ABN/address/REC remain visible but optional because joining must not create or alter an independent company. The client intent does not grant access: a user who skips business fields still cannot create a company without validated required details. Accepting a verified-email invitation applies only the server-side invitation's company and role.
+
+ABN validation is local length/format/modulus-89 checking following [ABN Lookup's published algorithm](https://abr.business.gov.au/Help/AbnFormat). It does not submit information to ABR or verify registration status. Phone and text fields receive server-side bounds/format validation. REC is registration data supplied by the user, never an accreditation assertion.
+
+Migration 0026_registration_profile.sql adds seven default-empty auth_user profile fields and settings.rec. Existing accounts are retained without fabricated names or registration data. For fresh staging apply every migration 0000–0026; if staging already has 0000–0025 applied, apply only the pending migration through the migration runner. Do not reset/recreate existing tables. The migration must precede deploying this code.
+
+Final verification: 225 handler/security checks and 59 headed-browser checks pass, with build/type check and registration-module lint clean. Browser checks cover the root login/Create account entry, prefilled onboarding, invitation safety, mobile overflow, invalid ABN error with retained form values and successful retry. Screenshots are in the ignored local browser-artifacts directory, including mobile-signup.png.

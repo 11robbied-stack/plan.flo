@@ -8,12 +8,22 @@
       "detail": {}
     },
     {
+      "name": "logged-out root displays sign-in and create-account",
+      "pass": true,
+      "detail": {}
+    },
+    {
       "name": "browser signup queues synthetic verification",
       "pass": true,
       "detail": {}
     },
     {
       "name": "browser verified login reaches onboarding",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "onboarding is prefilled from signup",
       "pass": true,
       "detail": {}
     },
@@ -43,7 +53,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "11df7d61-91b2-4d12-abfa-b5f49b946e6f"
+          "id": "8ea2540c-d308-4a5c-91e6-535ad238396e"
         }
       }
     },
@@ -58,7 +68,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "76710f4c-bffc-4268-b8e3-1a56b00b25c4"
+          "id": "7da70390-a9c8-4de0-b6e4-001a5f040bbc"
         }
       }
     },
@@ -73,7 +83,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "3ed5d78b-908b-48ce-9976-84a7b4bb979d"
+          "id": "780d27bf-f74f-41bb-8714-be57f270d573"
         }
       }
     },
@@ -83,7 +93,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "2078e9ef-ff00-4c16-ba8a-10efdc275b2d"
+          "id": "ad049785-33c5-45bb-b551-30a09fe0701d"
         }
       }
     },
@@ -93,7 +103,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "adcc6058-a217-4bd0-9116-e44fb542c656"
+          "id": "1b490a63-ee65-4d65-bdbe-189f5a442c51"
         }
       }
     },
@@ -103,7 +113,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "3bd5f0b6-f8ca-47fe-a292-90a5511819c7"
+          "id": "77f87e7b-8099-466b-b0ea-a902bc43255d"
         }
       }
     },
@@ -317,6 +327,21 @@
     },
     {
       "name": "visible workspace account link completes logout",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "mobile signup has requested fields without horizontal overflow",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "mobile invalid ABN shows error and preserves inputs",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "corrected registration succeeds after error",
       "pass": true,
       "detail": {}
     },

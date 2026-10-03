@@ -1,3 +1,4 @@
+import {registrationFields} from './registration-profile';
 import {env} from 'cloudflare:workers';
 import {betterAuth} from 'better-auth';
 import {drizzleAdapter} from '@better-auth/drizzle-adapter';
@@ -16,6 +17,7 @@ export function createCustomerAuth(db:ReturnType<typeof getDb>,origin:string,sec
  if(secret.length<32)throw new Error('Authentication secret must be configured');
  return betterAuth({appName:'PLAN.FLO',baseURL:origin,basePath:'/api/auth',secret,
   database:drizzleAdapter(db,{provider:'sqlite',schema,transaction:false}),trustedOrigins:[origin],
+  user:{additionalFields:Object.fromEntries(registrationFields.map(name=>[name,{type:'string' as const,required:false,defaultValue:'',returned:false}]))},
   emailAndPassword:{enabled:true,requireEmailVerification:true,autoSignIn:false,minPasswordLength:12,maxPasswordLength:128,revokeSessionsOnPasswordReset:true,sendResetPassword:async({user,url})=>send({to:user.email,purpose:'recovery',url})},
   emailVerification:{sendOnSignUp:true,autoSignInAfterVerification:false,expiresIn:3600,sendVerificationEmail:async({user,url})=>send({to:user.email,purpose:'verification',url})},
   session:{expiresIn:7*86400,updateAge:86400,cookieCache:{enabled:false}},

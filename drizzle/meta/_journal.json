@@ -183,6 +183,13 @@
       "when": 1790857431800,
       "tag": "0025_customer_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1790990526581,
+      "tag": "0026_registration_profile",
+      "breakpoints": true
     }
   ]
 }

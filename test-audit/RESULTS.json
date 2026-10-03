@@ -197,7 +197,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "f0950382-6a72-4fda-a4de-1309d0ef60f7"
+          "id": "3b8ebd9e-f2b6-4092-a2e8-2211064f09a5"
         }
       }
     },
@@ -207,7 +207,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "5c505d12-169f-447d-b663-a105d593d7b2"
+          "id": "47b0883f-5064-45c3-b1ce-41574fcc7d45"
         }
       }
     },
@@ -260,7 +260,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "9396ea32-0edd-4b71-9f1e-e4fcf08119f8"
+          "id": "bfcb8d49-6629-460d-85da-6b1fef9aea02"
         }
       }
     },
@@ -280,7 +280,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "f849739d-225a-4bfb-8710-23b8e505ee27"
+          "id": "6ce1160b-d707-4350-8b96-62453c901dc2"
         }
       }
     },
@@ -457,7 +457,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "b8f89836-918c-412e-be35-320dfea477ec"
+          "id": "35c33ee2-51eb-430f-89b7-eea4d8aeb3de"
         }
       }
     },
@@ -1207,6 +1207,101 @@
     },
     {
       "name": "login return preserves invitation",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "ABN format check accepts spaced checksum-valid number",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "ABN format rejects length checksum and letter errors",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "signup profile persists normalized fields",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "verified onboarding copies company draft exactly once",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "registration rejects missingName",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "registration rejects missingSurname",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "registration rejects missingBusiness",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "registration rejects badAbn",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "registration rejects missingAddress",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "registration rejects badPhone",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "registration rejects missingRec",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "registration rejects tooLongName",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "invalid registration creates no identity or company",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "invited signup accepts personal details without new business",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "join intent cannot bypass company onboarding validation",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "join intent grants no workspace or platform role",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "invited member draft never replaces company settings",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "repeat signup remains generic and cannot replace verified profile",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "session response does not expose business draft fields",
       "result": "PASS",
       "detail": {}
     }
