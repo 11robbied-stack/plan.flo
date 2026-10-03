@@ -1,6 +1,6 @@
 # PLAN.FLO authentication email
 
-This internal Worker implements the existing `AUTH_EMAIL.fetch()` contract for verification and password recovery. It uses Resend's HTTPS API without an SDK dependency. No provider account, key, sender or deployment has been configured, and no real email has been sent.
+This internal Worker implements the existing `AUTH_EMAIL.fetch()` contract for verification and password recovery. It uses Resend's HTTPS API without an SDK dependency. The parent now reports private mail deployment and owner-entered runtime secrets. This repository contains no credentials; local tests use synthetic delivery only. See `staging/DEPLOYMENT.md` for the current staging and owner-identity handoff.
 
 The app sends `POST https://mail.internal/send` with JSON `{to, purpose, url}`. Only `verification` and `recovery` are accepted. The Worker validates one recipient, an exact HTTPS application origin, the corresponding Better Auth path/token, and same-origin callbacks. It supplies its own sender, subject and plaintext content. Requests are limited to 8 KiB, links to 4 KiB and provider responses to 4 KiB. Caller-supplied templates, sender addresses and provider endpoints are not accepted.
 
@@ -43,4 +43,4 @@ pnpm build
 pnpm exec wrangler deploy --config staging/wrangler.staging.json
 ```
 
-Before app deployment, finish the isolated D1 bootstrap and record/verify its ledger using `staging/bootstrap/HANDOFF.txt`; replace the exact staging origin in both configs and verified sender in the mail config. `pnpm staging:check` deliberately rejects the current placeholders. Both deployments remain private by configuration; making the app reachable on an approved hostname is a separate coordinated routing step. Never add public routing to the mail Worker. The user can enter secrets through Cloudflare's supported dashboard instead of granting this terminal persistent credentials.
+Before app deployment, finish the isolated D1 bootstrap and record/verify its ledger using `staging/bootstrap/HANDOFF.txt`; replace the exact staging origin in both configs and verified sender in the mail config. `pnpm staging:check` validates the approved app custom domain and private mail configuration. The app config now preserves `staging.planflo.app`; the mail Worker remains private. Never add public routing to the mail Worker. The user can enter secrets through Cloudflare's supported dashboard instead of granting this terminal persistent credentials.

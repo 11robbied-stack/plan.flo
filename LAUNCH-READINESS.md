@@ -82,3 +82,7 @@ Final verification: 225 handler/security checks and 59 headed-browser checks pas
 ## Email and bootstrap handoff
 
 See `workers/auth-email/README.md` for exact provider/sender/secret setup and delivery limits, and `staging/bootstrap/HANDOFF.txt` for the repeat-safe empty-database dashboard bootstrap. All 140 bootstrap statements were replayed in isolated D1 and matched migrations 0000–0026 exactly: 43 tables, 41 indexes, 55 triggers; retry preserved the timestamp seed and 27-entry ledger. No dashboard transaction guarantee is assumed. Parent reports planflo.app nameservers switched to Cloudflare and activation pending; this executor did not operate DNS or browser UI.
+
+## Live staging configuration preservation
+
+Parent now reports staging.planflo.app serving login, unauthenticated data returning 401, and both runtime secrets entered by the owner. `staging/DEPLOYMENT.md` supersedes earlier private-only deployment instructions: the checked-in app config preserves its approved Custom Domain and exact origin; mail remains private. No push/deploy is part of this configuration commit. Platform-owner pins remain unset pending Rob's verified immutable account identity and explicit approval.

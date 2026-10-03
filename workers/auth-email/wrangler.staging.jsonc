@@ -2,15 +2,15 @@
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "planflo-staging-mail",
   "main": "index.mjs",
-  "compatibility_date": "2026-05-15",
+  "compatibility_date": "2026-10-03",
   "workers_dev": false,
   "preview_urls": false,
   "routes": [],
   "observability": {"enabled": false},
   "vars": {
     "AUTH_EMAIL_PROVIDER": "resend",
-    "AUTH_EMAIL_FROM": "REPLACE_WITH_VERIFIED_SENDER",
-    "PLANFLO_AUTH_ORIGIN": "https://REPLACE_WITH_APPROVED_STAGING_HOST"
+    "AUTH_EMAIL_FROM": "no-reply@notifications.planflo.app",
+    "PLANFLO_AUTH_ORIGIN": "https://staging.planflo.app"
   }
   // RESEND_API_KEY: Worker secret, never a repository variable.
 }

@@ -18,7 +18,12 @@
   ],
   "workers_dev": false,
   "preview_urls": false,
-  "routes": [],
+  "routes": [
+    {
+      "pattern": "staging.planflo.app",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": "../dist/client"
   },
@@ -45,6 +50,6 @@
   "vars": {
     "PLANFLO_AUTH_MODE": "standalone",
     "PLANFLO_DEPLOYMENT": "staging",
-    "PLANFLO_AUTH_ORIGIN": "https://REPLACE_WITH_APPROVED_STAGING_HOST"
+    "PLANFLO_AUTH_ORIGIN": "https://staging.planflo.app"
   }
 }
