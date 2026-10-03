@@ -8,6 +8,7 @@ export function canAccessProject(access: Access, projectId: string): boolean {
 
 /** Company resources (logos/templates) deliberately have no project assignment. */
 export function canAccessFileProject(access: Access, file: {projectId: string; category: string}): boolean {
+  if(file.category==='invoice'&&!file.projectId)return !access.blocked&&access.role!=='member';
   return ['logo', 'builder-logo'].includes(file.category)
     ? !access.blocked && file.projectId === ''
     : canAccessProject(access, file.projectId);

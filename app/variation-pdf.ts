@@ -1,30 +1,53 @@
-import {PDFDocument,StandardFonts,rgb} from 'pdf-lib';
-import type {CompanyData} from './rfi-pdf';
-export type VariationItem={item:string;type:string;quantity:string;uom:string;rate:string};
-export type VariationData={version?:number;approvedBy?:string;approvedAt?:string;number:string;title:string;submitted:string;reference:string;status:string;approvalReference:string;items:VariationItem[];inclusions:string[];exclusions:string[];clarifications:string[];eot:string;notes:string};
-const clean=(s:any)=>String(s??'').replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"').replace(/[\u2013\u2014]/g,'-').replace(/[^\x20-\x7e\u00a0-\u00ff]/g,' ');
-const fmt=(s:string)=>/^\d{4}-\d{2}-\d{2}$/.test(s||'')?`${s.slice(8,10)}/${s.slice(5,7)}/${s.slice(0,4)}`:s;
-export function variationTotals(items:VariationItem[]){const subtotalCents=items.reduce((total,row)=>total+Math.round((Number(row.quantity)||0)*(Number(row.rate)||0)*100),0);const gstCents=Math.round(subtotalCents*.1);return {subtotal:subtotalCents/100,gst:gstCents/100,total:(subtotalCents+gstCents)/100}}
-export async function downloadVariationPdf(d:VariationData,p:{name:string;number:string;address:string;client:string;builder:string;builderContact?:any;setup:string},c:CompanyData){
- const pdf=await PDFDocument.create(),regular=await pdf.embedFont(StandardFonts.Helvetica),bold=await pdf.embedFont(StandardFonts.HelveticaBold);const W=595,H=842,L=42,R=553,ink=rgb(.08,.15,.25),muted=rgb(.39,.46,.55),rule=rgb(.83,.87,.92),blue=rgb(.09,.39,.89);let page=pdf.addPage([W,H]),y=H-45;
- const money=(n:number)=>`$${n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
- function draw(t:any,x:number,yy:number,size=9,font=regular,color=ink){page.drawText(clean(t),{x,y:yy,font,size,color})}
- function next(){page=pdf.addPage([W,H]);y=H-48;draw(`${d.number}  |  ${p.name}`,L,y,9,bold,blue);y-=23;page.drawLine({start:{x:L,y},end:{x:R,y},thickness:.7,color:rule});y-=25}
- function need(height:number){if(y-height<65)next()}
- function wrap(t:string,w:number,size=9,font=regular){const result:string[]=[];for(const paragraph of clean(t).split('\n')){let line='';for(const word of paragraph.split(/\s+/)){if(!word)continue;const test=line?`${line} ${word}`:word;if(font.widthOfTextAtSize(test,size)>w&&line){result.push(line);line=word}else line=test}result.push(line||' ')}return result}
- function paragraph(t:string,indent=0){for(const line of wrap(t,R-L-indent)){need(14);draw(line,L+indent,y);y-=14}}
- function label(t:string){need(27);draw(t.toUpperCase(),L,y,9,bold,blue);y-=19}
- function pair(k:string,v:string){need(22);draw(k,L,y,9,bold,muted);const lines=wrap(v||'—',R-210);for(const line of lines){draw(line,210,y);y-=13}y-=9;page.drawLine({start:{x:L,y:y+5},end:{x:R,y:y+5},thickness:.5,color:rule})}
- if(c.logoFileId){try{const response=await fetch(`/api/file/${encodeURIComponent(c.logoFileId)}`);if(response.ok){const buf=await response.arrayBuffer();const img=(response.headers.get('content-type')||'').includes('png')?await pdf.embedPng(buf):await pdf.embedJpg(buf);const scale=Math.min(150/img.width,56/img.height,1);page.drawImage(img,{x:L,y:H-104,width:img.width*scale,height:img.height*scale})}}catch{/* Company text remains available. */}}
- const cname=clean(c.company||'Company');draw(cname,R-Math.min(230,bold.widthOfTextAtSize(cname,14)),H-51,14,bold);let cy=H-68;for(const t of [c.abn?`ABN ${c.abn}`:'',c.address,c.phone,c.email].filter(Boolean)){for(const line of wrap(t,225,8)){draw(line,R-regular.widthOfTextAtSize(line,8),cy,8,regular,muted);cy-=11}}
- y=Math.min(H-124,cy-18);page.drawLine({start:{x:L,y},end:{x:R,y},thickness:2,color:blue});y-=27;draw('VARIATION PROPOSAL',L,y,10,bold,blue);y-=29;draw(d.number||'Variation',L,y,23,bold);y-=25;for(const line of wrap(d.title||'Untitled variation',R-L,14,bold)){need(19);draw(line,L,y,14,bold);y-=18}y-=12;
- let setup:any={};try{setup=JSON.parse(p.setup||'{}')}catch{}
- label('Project & client');pair('Project',p.name);pair('Project number',p.number);pair('Project address',p.address);pair('Client / builder',p.builder||setup.clientCompany||p.client);if(p.builderContact?.name||setup.clientRepresentative)pair('Attention',p.builderContact?.name||setup.clientRepresentative);if(p.builderContact?.email)pair('Contact email',p.builderContact.email);if(p.builderContact?.phone)pair('Contact phone',p.builderContact.phone);if(setup.clientAddress)pair('Client address',setup.clientAddress);pair('Date submitted',fmt(d.submitted));pair('Reference document',d.reference);pair('Status',d.status);if(d.approvalReference)pair('Approval reference',d.approvalReference);
- y-=10;label('Variation works');const headings=[['ITEM',L],['TYPE',241],['QTY',309],['UOM',355],['RATE',407],['TOTAL',487]] as const;
- function tableHeader(){need(32);page.drawRectangle({x:L,y:y-10,width:R-L,height:23,color:rgb(.94,.96,.98)});for(const [h,x] of headings)draw(h,x,y,7,bold,muted);y-=30}
- tableHeader();for(const item of d.items){const qty=Number(item.quantity)||0,rate=Number(item.rate)||0,amount=Math.round(qty*rate*100)/100;const nameLines=wrap(item.item||'—',190,8);const typeLines=wrap(item.type||'—',62,8);const rowH=Math.max(23,Math.max(nameLines.length,typeLines.length)*12+8);if(y-rowH<75){next();tableHeader()}nameLines.forEach((line,i)=>draw(line,L+4,y-i*12,8));typeLines.forEach((line,i)=>draw(line,241,y-i*12,8));draw(String(qty),309,y,8);draw(item.uom||'—',355,y,8);draw(money(rate),407,y,8);draw(money(amount),487,y,8);y-=rowH;page.drawLine({start:{x:L,y:y+7},end:{x:R,y:y+7},thickness:.5,color:rule})}
- const totals=variationTotals(d.items);need(80);for(const [k,v] of [['Subtotal (ex GST)',totals.subtotal],['GST (10%)',totals.gst],['Total (inc GST)',totals.total]] as const){draw(k,373,y,9,k.startsWith('Total')?bold:regular);draw(money(v),487,y,9,k.startsWith('Total')?bold:regular);y-=19}if(d.eot) {y-=3;pair('Extension of time',`${d.eot} working days`)}
- for(const [heading,arr] of [['Inclusions',d.inclusions],['Exclusions',d.exclusions],['Clarifications',d.clarifications]] as const){if(arr.some(x=>x.trim())){y-=12;label(heading);arr.filter(x=>x.trim()).forEach((item,i)=>{need(30);draw(`${i+1}.`,L,y,9,bold,blue);paragraph(item,19);y-=8})}}
- y-=8;label('Approval');need(75);page.drawRectangle({x:L,y:y-51,width:R-L,height:54,borderColor:rule,borderWidth:1});draw('Authorised by:',L+12,y-15,9,bold);draw('Date:',385,y-15,9,bold);
- const pages=pdf.getPages();pages.forEach((pg,i)=>{pg.drawLine({start:{x:L,y:40},end:{x:R,y:40},thickness:.5,color:rule});pg.drawText(clean(`${c.company||'Company'}  |  ${d.number}  |  ${p.name}`),{x:L,y:27,font:regular,size:8,color:muted});pg.drawText(`${i+1} / ${pages.length}`,{x:R-26,y:27,font:regular,size:8,color:muted})});const bytes=await pdf.save();const blob=new Blob([new Uint8Array(bytes)],{type:'application/pdf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`${(d.number||'Variation').replace(/[^a-z0-9-_]/gi,'_')}_${p.name.replace(/[^a-z0-9-_]/gi,'_')}.pdf`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)
+import type { CompanyData } from './rfi-pdf';
+import { PdfReport, downloadPdf, pdfDate, pdfMoney, type PdfProject } from './pdf-report';
+export type VariationItem = {
+    item: string;
+    type: string;
+    quantity: string;
+    uom: string;
+    rate: string;
+};
+export type VariationData = {
+    version?: number;
+    approvedBy?: string;
+    approvedAt?: string;
+    number: string;
+    title: string;
+    submitted: string;
+    reference: string;
+    status: string;
+    approvalReference: string;
+    items: VariationItem[];
+    inclusions: string[];
+    exclusions: string[];
+    clarifications: string[];
+    eot: string;
+    notes: string;
+};
+export function variationTotals(items: VariationItem[]) { const subtotalCents = items.reduce((total, row) => total + Math.round((Number(row.quantity) || 0) * (Number(row.rate) || 0) * 100), 0); const gstCents = Math.round(subtotalCents * .1); return { subtotal: subtotalCents / 100, gst: gstCents / 100, total: (subtotalCents + gstCents) / 100 }; }
+export async function buildVariationPdf(d: VariationData, p: PdfProject, c: CompanyData) {
+    const r = await PdfReport.create('Variation proposal', d.number || 'Variation', { company: c, project: p });
+    r.intro(d.status, [['Submitted', pdfDate(d.submitted)], ['Reference document', d.reference]]);
+    r.parties();
+    r.heading('Variation works');
+    r.paragraph(d.title || 'Untitled variation');
+    r.y -= 12;
+    r.table([{ label: 'DESCRIPTION', width: 185 }, { label: 'TYPE', width: 70 }, { label: 'QTY', width: 45, right: true }, { label: 'UNIT', width: 49 }, { label: 'RATE', width: 80, right: true }, { label: 'AMOUNT', width: 90.28, right: true }], d.items.map(i => [i.item || 'Not entered', i.type || '-', String(Number(i.quantity) || 0), i.uom || '-', pdfMoney(Number(i.rate) || 0), pdfMoney(Math.round((Number(i.quantity) || 0) * (Number(i.rate) || 0) * 100) / 100)]));
+    const t = variationTotals(d.items);
+    r.totals([['Subtotal ex GST', pdfMoney(t.subtotal)], ['GST (10%)', pdfMoney(t.gst)], ['Total inc GST', pdfMoney(t.total)]]);
+    if (d.eot)
+        r.field('Extension of time', d.eot + ' working days');
+    for (const [heading, items] of [['Inclusions', d.inclusions], ['Exclusions', d.exclusions], ['Clarifications', d.clarifications]] as const) {
+        if (items.some(x => x.trim())) {
+            r.heading(heading);
+            items.filter(x => x.trim()).forEach((item, i) => { r.paragraph(`${i + 1}. ${item}`); r.y -= 7; });
+        }
+    }
+    if (d.approvalReference)
+        r.field('Approval reference', d.approvalReference);
+    if (d.approvedBy)
+        r.metadata([['Approved by', d.approvedBy], ['Approved at', d.approvedAt]]);
+    r.approval();
+    return r.save();
 }
+export async function downloadVariationPdf(d: VariationData, p: PdfProject, c: CompanyData) { downloadPdf(await buildVariationPdf(d, p, c), `${d.number || 'Variation'}_${p.name || 'Project'}`); }

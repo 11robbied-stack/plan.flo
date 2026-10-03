@@ -197,7 +197,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "09b30bc2-5df9-41ce-b6ca-566620352c65"
+          "id": "e7013904-0190-40d2-8414-72e93a628be0"
         }
       }
     },
@@ -207,7 +207,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "afa7e411-44dd-43bb-84ee-ea7502d9ad82"
+          "id": "3a5d2def-61db-489d-9701-1c8f902ed746"
         }
       }
     },
@@ -260,7 +260,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "0d165a04-6d15-4ef8-b66a-b339b6579454"
+          "id": "fbc3d404-4ef5-473c-b5ac-dc490304fc85"
         }
       }
     },
@@ -280,7 +280,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "fb2f296f-81f8-4bb3-8944-14ca00393a2d"
+          "id": "da3e5667-db11-41dc-8991-443abf48ba1c"
         }
       }
     },
@@ -457,7 +457,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "3356ef5b-085e-48c5-aa62-444fadcbb140"
+          "id": "7aa0d0d4-515e-4a74-ba2f-ada452b1dc91"
         }
       }
     },
@@ -932,6 +932,246 @@
       "detail": {}
     },
     {
+      "name": "v58 anonymous invoice and Gmail denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member list filters projects and invoices before pagination",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot inspect vi2",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot download vi2",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot ignore vi2",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot inspect vi0",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot download vi0",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot ignore vi0",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot inspect vib",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot download vib",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot ignore vib",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member can inspect and download assigned invoice",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 forbidden project query denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot move invoice to unassigned project",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot connect company mailbox",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot sync company mailbox",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot enable company mailbox",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member cannot disconnect company mailbox",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 member OAuth callback denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 Costs permission required",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 disabled member invoice access denied",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 administrator can inspect unassigned inbox attachment",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 owner cannot inspect other company invoice",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 invoice rejects mutation origin null",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 invoice rejects mutation origin https://evil.example",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 invoice rejects mutation origin http://sibling.localhost:5199",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 gmail rejects mutation origin null",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 gmail rejects mutation origin https://evil.example",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 gmail rejects mutation origin http://sibling.localhost:5199",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 Gmail inactive without credentials",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 missing Gmail credentials fail without outbound request",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 invoice assignment succeeds",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 assignment moves invoice attachment atomically",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 assignment grants attachment only with assigned project",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 explicit review confirmation required",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 invoice approval creates expense",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 repeated invoice approval cannot duplicate expense",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 moving invoice removes old project file access",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 former project reader loses moved invoice and file",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 purchase order blocked without saved project number",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 save Project Setup PO reference",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 stale PO number rejected",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 new order uses saved project number",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 existing order retains original number",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 duplicate company PO references blocked",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 PO API still rejects unassigned project",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 database blocks cross-company invoice project",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
+      "name": "v58 database blocks cross-company invoice attachment",
+      "result": "PASS",
+      "detail": {}
+    },
+    {
       "name": "standalone ignores forged Sites owner headers",
       "result": "PASS",
       "detail": {}
@@ -1305,5 +1545,9 @@
       "result": "PASS",
       "detail": {}
     }
+  ],
+  "integrationParents": [
+    "0ea88f753f23dd8a2422d202e48b2a3f6808f24f",
+    "074c21e97abcb9976a81b3a8550c48af5daae590"
   ]
 }

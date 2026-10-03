@@ -146,6 +146,7 @@ const runtime=await import('../app/auth-runtime');
 const authRoutes=await import('../app/api/auth/[...all]/route');
 const onboarding=await import('../app/api/onboarding/route');
 const e=(globalThis as any).__testEnv;
+await (await import('./v58-checks')).v58Checks({sql,objects,check,req,json});
 e.PLANFLO_AUTH_MODE='standalone';e.PLANFLO_DEPLOYMENT='test';
 identity('rob');check('standalone ignores forged Sites owner headers',await auth.getChatGPTUser()===null,{});
 e.PLANFLO_AUTH_ORIGIN='https://auth.example.test';e.BETTER_AUTH_SECRET='synthetic-test-secret-never-use-in-production-2026';
@@ -237,6 +238,6 @@ const minimalUser=await auth.getChatGPTUser();check('join intent grants no works
 check('invited member draft never replaces company settings',!sql.prepare('SELECT owner FROM settings WHERE owner=?').get(staffAuth!.userId),{});
 ip++;const repeatRegistration=await ar('sign-up/email',{email,password,firstName:'Changed',surname:'Attacker',businessName:'Changed company'});check('repeat signup remains generic and cannot replace verified profile',repeatRegistration.status===200&&sql.prepare('SELECT first_name FROM auth_user WHERE email=?').get(email)?.first_name==='Synthetic',{});
 const privateSession=await runtime.customerAuth().api.getSession({headers:(globalThis as any).__testHeaders});check('session response does not expose business draft fields',!!privateSession&&!('abn' in privateSession.user)&&!('phone' in privateSession.user)&&!('rec' in privateSession.user),{});
-writeFileSync(out+'/results.json',JSON.stringify({baseline:'2fa2b4ec0a8c66d4cec2a66de6db185d0388b3d6',isolation:{database:'in-memory SQLite with real migrations',objects:'in-memory synthetic R2 adapter',identity:'explicit Sites fixture plus real Better Auth cookie sessions and auth email Worker with synthetic provider transport',network:'global fetch throws',productionSecrets:'none loaded'},results},null,2));console.log(JSON.stringify({passed:results.filter(r=>r.result==='PASS').length,failed:results.filter(r=>r.result==='FAIL').length}));
+writeFileSync(out+'/results.json',JSON.stringify({baseline:'2fa2b4ec0a8c66d4cec2a66de6db185d0388b3d6',integrationParents:['0ea88f753f23dd8a2422d202e48b2a3f6808f24f','074c21e97abcb9976a81b3a8550c48af5daae590'],isolation:{database:'in-memory SQLite with real migrations',objects:'in-memory synthetic R2 adapter',identity:'explicit Sites fixture plus real Better Auth cookie sessions and auth email Worker with synthetic provider transport',network:'global fetch throws',productionSecrets:'none loaded'},results},null,2));console.log(JSON.stringify({passed:results.filter(r=>r.result==='PASS').length,failed:results.filter(r=>r.result==='FAIL').length}));
 
 process.exitCode=results.some(r=>r.result==='FAIL')?1:0;

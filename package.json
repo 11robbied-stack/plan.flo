@@ -16,7 +16,10 @@
     "typecheck": "tsc -p test-audit/tsconfig.app.json",
     "staging:check": "node scripts/check-staging.mjs",
     "test:browser": "node test-audit/browser-acceptance.mjs",
-    "test:email": "node --test tests/auth-email/*.test.mjs"
+    "test:email": "node --test tests/auth-email/*.test.mjs",
+    "release:check": "node scripts/release.mjs check",
+    "release:prepare": "node scripts/release.mjs prepare",
+    "release:verify": "node scripts/release.mjs verify"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -45,6 +48,7 @@
     "recharts": "^3.8.0",
     "sonner": "^2.0.8",
     "tailwind-merge": "3.6.0",
+    "unpdf": "^1.8.1",
     "vaul": "^1.1.2",
     "zod": "^3.25.76"
   },

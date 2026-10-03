@@ -1,6 +1,10 @@
 {
   "date": "2026-10-03",
-  "environment": "Installed Chrome, headed; local Miniflare/workerd with disposable D1/R2, synthetic mail and blocked external HTTP",
+  "environment": "Local Chrome, disposable Miniflare D1/R2, synthetic email and blocked outbound HTTP",
+  "integrationParents": [
+    "0ea88f753f23dd8a2422d202e48b2a3f6808f24f",
+    "074c21e97abcb9976a81b3a8550c48af5daae590"
+  ],
   "results": [
     {
       "name": "isolated local Worker and migrations start",
@@ -63,7 +67,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "0c594652-5cce-4ec5-95c2-a7e81f8f4c62"
+          "id": "31fef9d9-a747-4000-a301-ae898099f1a6"
         }
       }
     },
@@ -78,7 +82,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "376e6242-2eb4-439d-85f7-e40c0332c6e3"
+          "id": "aa1ddec1-b0ed-4409-bb88-5a503960cc73"
         }
       }
     },
@@ -93,7 +97,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "bd7e7ef2-e87b-4642-a0b6-3e47afbc9db8"
+          "id": "fa1adbee-86d0-4cc7-bc7e-10c25eccb12f"
         }
       }
     },
@@ -103,7 +107,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "14b3179b-60f4-4f66-bb5b-1b34a1c2a3b6"
+          "id": "3a1131bc-8e48-4a3b-8a57-cbed7796108d"
         }
       }
     },
@@ -113,7 +117,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "d4ce149c-acd9-4e76-810d-094b2dda6c03"
+          "id": "d7de5958-f04f-485d-9f76-cf24f4492151"
         }
       }
     },
@@ -123,7 +127,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "492c15fc-f887-483f-b950-3169af6730d1"
+          "id": "bed17780-c819-4078-8204-67b5f2055bc9"
         }
       }
     },
@@ -326,6 +330,51 @@
       "detail": {}
     },
     {
+      "name": "visible build ID matches server version",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "company header shows saved company fallback",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "synthetic company logo uploads",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "company logo settings save",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "company header renders authenticated logo",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "new PO blocks save without Project Setup reference",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "new PO uses saved read-only project reference",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "PO appears in project register",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "Costs renders supplier invoice review",
+      "pass": true,
+      "detail": {}
+    },
+    {
       "name": "workspace schedule screen renders",
       "pass": true,
       "detail": {}
@@ -427,11 +476,5 @@
         "errors": []
       }
     }
-  ],
-  "limitations": [
-    "No real email delivery, deployed staging, payment or external provider integrations tested.",
-    "Core record saves use authenticated browser fetch calls; account lifecycle, project creation, invitations, page navigation, markups and download use UI controls.",
-    "Native PDF plugin root cause remains unconfirmed; primary preview now uses verified PDF.js canvas rendering instead.",
-    "New resend network/rate-limit UI branches use explicit synthetic browser responses; server rate limits and invalid/expired tokens also covered by security suite."
   ]
 }

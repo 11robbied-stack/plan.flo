@@ -61,3 +61,6 @@ next-env.d.ts
 
 # Local email Worker dry-run output.
 /workers/auth-email/test-audit/
+!.env.example
+
+!/test-audit/v58-checks.ts

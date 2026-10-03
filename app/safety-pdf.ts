@@ -1,2 +1,19 @@
-import {PDFDocument,StandardFonts,rgb} from 'pdf-lib';
-export async function safetyPdf(doc:any){const pdf=await PDFDocument.create(),font=await pdf.embedFont(StandardFonts.Helvetica);let page=pdf.addPage(),y=790;const clean=(v:any)=>String(v||'').replace(/[^\x20-\x7e\n]/g,'-');function line(t:string,size=11){if(y<55){page=pdf.addPage();y=790}page.drawText(t,{x:45,y,size,font,color:rgb(.08,.14,.23)});y-=size+7;}function text(t:any,size=11){for(const para of clean(t).split('\n')){let row='';for(const word of para.split(' ')){for(let start=0;start<word.length||start===0;start+=70){const piece=word.slice(start,start+70);if(font.widthOfTextAtSize((row?row+' ':'')+piece,size)>500){line(row,size);row=piece}else row+=(row?' ':'')+piece;}}line(row,size)}}text(doc.title,18);text(doc.category+' | '+doc.status);text('Site: '+doc.data.site);text('Builder: '+doc.data.builder);text('Address: '+doc.data.address);text('Date: '+doc.data.date);y-=15;for(const f of doc.data.fields){text(f.label,13);text(f.value||'(Not completed)');y-=12}if(doc.data.completedBy)text('Reviewed and completed by '+doc.data.completedBy+' on '+doc.data.completedAt);text('This record does not include worker signatures.');const bytes=await pdf.save();const url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:'application/pdf'}));const a=document.createElement('a');a.href=url;a.download=doc.title.replace(/[^a-z0-9 -]/gi,'').slice(0,80)+'.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000)}
+import { PdfReport, downloadPdf, pdfDate, type PdfContext, projectParty } from './pdf-report';
+export async function buildSafetyPdf(doc: any, context: PdfContext = {}) {
+    const project = { ...context.project, name: doc.data.site || context.project?.name, address: doc.data.address || context.project?.address, builder: doc.data.builder || context.project?.builder };
+    const r = await PdfReport.create('Site safety document', doc.category || 'Site Docs', { ...context, project });
+    r.intro(doc.status, [['Form date', pdfDate(doc.data.date)]]);
+    const party = project.builder && project.builder !== context.project?.builder ? { name: project.builder } : projectParty(project);
+    r.parties(party);
+    r.heading(doc.title);
+    for (const field of doc.data.fields) {
+        r.heading(field.label);
+        r.paragraph(field.value || 'Not completed');
+        r.y -= 10;
+    }
+    if (doc.data.completedBy)
+        r.metadata([['Reviewed and completed by', doc.data.completedBy], ['Completed at', doc.data.completedAt]]);
+    r.paragraph('This record does not include worker signatures.', 9);
+    return r.save();
+}
+export async function safetyPdf(doc: any, context: PdfContext = {}) { downloadPdf(await buildSafetyPdf(doc, context), doc.title || 'Site safety document'); }
