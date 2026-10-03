@@ -1,0 +1,18 @@
+{
+  "tests": 39,
+  "passed": 39,
+  "failed": 0,
+  "integration": "actual local workerd service binding; all Resend responses synthetic",
+  "auth_regression": {
+    "passed": 225,
+    "failed": 0,
+    "mail_contract": "real adapter validates Better Auth generated verification/recovery links"
+  },
+  "checks": {
+    "application_typecheck": "pass",
+    "changed_email_files_lint": "pass",
+    "wrangler_email_deploy_dry_run": "pass"
+  },
+  "real_email_sent": false,
+  "remote_resources_modified": false
+}

@@ -58,3 +58,6 @@ next-env.d.ts
 
 !/test-audit/browser-acceptance.mjs
 !/test-audit/BROWSER-RESULTS.json
+
+# Local email Worker dry-run output.
+/workers/auth-email/test-audit/

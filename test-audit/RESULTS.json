@@ -3,7 +3,7 @@
   "isolation": {
     "database": "in-memory SQLite with real migrations",
     "objects": "in-memory synthetic R2 adapter",
-    "identity": "explicit Sites fixture plus real Better Auth cookie sessions with synthetic email service",
+    "identity": "explicit Sites fixture plus real Better Auth cookie sessions and auth email Worker with synthetic provider transport",
     "network": "global fetch throws",
     "productionSecrets": "none loaded"
   },
@@ -197,7 +197,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "3b8ebd9e-f2b6-4092-a2e8-2211064f09a5"
+          "id": "09b30bc2-5df9-41ce-b6ca-566620352c65"
         }
       }
     },
@@ -207,7 +207,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "47b0883f-5064-45c3-b1ce-41574fcc7d45"
+          "id": "afa7e411-44dd-43bb-84ee-ea7502d9ad82"
         }
       }
     },
@@ -260,7 +260,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "bfcb8d49-6629-460d-85da-6b1fef9aea02"
+          "id": "0d165a04-6d15-4ef8-b66a-b339b6579454"
         }
       }
     },
@@ -280,7 +280,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "6ce1160b-d707-4350-8b96-62453c901dc2"
+          "id": "fb2f296f-81f8-4bb3-8944-14ca00393a2d"
         }
       }
     },
@@ -457,7 +457,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "35c33ee2-51eb-430f-89b7-eea4d8aeb3de"
+          "id": "3356ef5b-085e-48c5-aa62-444fadcbb140"
         }
       }
     },
@@ -1304,26 +1304,6 @@
       "name": "session response does not expose business draft fields",
       "result": "PASS",
       "detail": {}
-    }
-  ],
-  "workerSmoke": [
-    {
-      "path": "/login",
-      "status": 200,
-      "hasLoginForm": true,
-      "spoofHeaders": true
-    },
-    {
-      "path": "/",
-      "status": 200,
-      "hasLoginForm": null,
-      "spoofHeaders": true
-    },
-    {
-      "path": "/api/data",
-      "status": 401,
-      "hasLoginForm": null,
-      "spoofHeaders": true
     }
   ]
 }

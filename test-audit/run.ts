@@ -3,6 +3,7 @@ import {readFileSync,readdirSync,mkdirSync,writeFileSync} from 'node:fs';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {PDFDocument} from 'pdf-lib';
 import {NextRequest} from 'next/server';
+import {createMailWorker} from '../workers/auth-email/index.mjs';
 const out='test-audit/evidence'; mkdirSync(out,{recursive:true});
 const sql=new DatabaseSync(':memory:');sql.exec('PRAGMA foreign_keys=ON');
 for(const f of readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort())sql.exec(readFileSync('drizzle/'+f,'utf8'));
@@ -149,7 +150,8 @@ e.PLANFLO_AUTH_MODE='standalone';e.PLANFLO_DEPLOYMENT='test';
 identity('rob');check('standalone ignores forged Sites owner headers',await auth.getChatGPTUser()===null,{});
 e.PLANFLO_AUTH_ORIGIN='https://auth.example.test';e.BETTER_AUTH_SECRET='synthetic-test-secret-never-use-in-production-2026';
 const mailbox:{to:string;purpose:string;url:string}[]=[];
-e.AUTH_EMAIL={fetch:async(r:Request)=>{mailbox.push(await r.json() as any);return new Response(null,{status:204})}};
+const testMailWorker=createMailWorker({fetch:async()=>Response.json({id:'synthetic-accepted-email'})});
+e.AUTH_EMAIL={fetch:async(r:Request)=>{const mail=await r.clone().json() as any;const response=await testMailWorker.fetch(r,{AUTH_EMAIL_PROVIDER:'resend',AUTH_EMAIL_FROM:'auth@example.test',RESEND_API_KEY:'re_synthetic_test_only',PLANFLO_AUTH_ORIGIN:e.PLANFLO_AUTH_ORIGIN});if(response.ok)mailbox.push(mail);return response;}};
 let ip=1;
 function authRequest(path:string,body?:unknown,cookie='',origin='https://auth.example.test'){
  if(path==='sign-up/email'&&body&&typeof body==='object')body={firstName:'Synthetic',surname:'Customer',businessName:'Synthetic Electrical',abn:'10 000 000 000',address:'1 Test Street, Testville',phone:'+61 400 000 000',rec:'TEST-REC-001',...body};
@@ -235,6 +237,6 @@ const minimalUser=await auth.getChatGPTUser();check('join intent grants no works
 check('invited member draft never replaces company settings',!sql.prepare('SELECT owner FROM settings WHERE owner=?').get(staffAuth!.userId),{});
 ip++;const repeatRegistration=await ar('sign-up/email',{email,password,firstName:'Changed',surname:'Attacker',businessName:'Changed company'});check('repeat signup remains generic and cannot replace verified profile',repeatRegistration.status===200&&sql.prepare('SELECT first_name FROM auth_user WHERE email=?').get(email)?.first_name==='Synthetic',{});
 const privateSession=await runtime.customerAuth().api.getSession({headers:(globalThis as any).__testHeaders});check('session response does not expose business draft fields',!!privateSession&&!('abn' in privateSession.user)&&!('phone' in privateSession.user)&&!('rec' in privateSession.user),{});
-writeFileSync(out+'/results.json',JSON.stringify({baseline:'2fa2b4ec0a8c66d4cec2a66de6db185d0388b3d6',isolation:{database:'in-memory SQLite with real migrations',objects:'in-memory synthetic R2 adapter',identity:'explicit Sites fixture plus real Better Auth cookie sessions with synthetic email service',network:'global fetch throws',productionSecrets:'none loaded'},results},null,2));console.log(JSON.stringify({passed:results.filter(r=>r.result==='PASS').length,failed:results.filter(r=>r.result==='FAIL').length}));
+writeFileSync(out+'/results.json',JSON.stringify({baseline:'2fa2b4ec0a8c66d4cec2a66de6db185d0388b3d6',isolation:{database:'in-memory SQLite with real migrations',objects:'in-memory synthetic R2 adapter',identity:'explicit Sites fixture plus real Better Auth cookie sessions and auth email Worker with synthetic provider transport',network:'global fetch throws',productionSecrets:'none loaded'},results},null,2));console.log(JSON.stringify({passed:results.filter(r=>r.result==='PASS').length,failed:results.filter(r=>r.result==='FAIL').length}));
 
 process.exitCode=results.some(r=>r.result==='FAIL')?1:0;

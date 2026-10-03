@@ -1,0 +1,836 @@
+[
+  {
+    "type": "table",
+    "name": "account_limits",
+    "tbl_name": "account_limits",
+    "sql": "CREATE TABLE `account_limits` (\n\t`owner` text PRIMARY KEY NOT NULL,\n\t`enabled` integer DEFAULT 0 NOT NULL,\n\t`plan` text DEFAULT '' NOT NULL,\n\t`projects` integer NOT NULL,\n\t`office` integer NOT NULL,\n\t`field` integer NOT NULL,\n\t`bytes` integer NOT NULL,\n\t`override_projects` integer,\n\t`override_office` integer,\n\t`override_field` integer,\n\t`override_bytes` integer,\n\t`expires` text,\n\t`reason` text DEFAULT '' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "app_settings",
+    "tbl_name": "app_settings",
+    "sql": "CREATE TABLE `app_settings` (\n\t`owner` text PRIMARY KEY NOT NULL,\n\t`data` text NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "auth_account",
+    "tbl_name": "auth_account",
+    "sql": "CREATE TABLE `auth_account` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`account_id` text NOT NULL,\n\t`provider_id` text NOT NULL,\n\t`user_id` text NOT NULL,\n\t`access_token` text,\n\t`refresh_token` text,\n\t`id_token` text,\n\t`access_token_expires_at` integer,\n\t`refresh_token_expires_at` integer,\n\t`scope` text,\n\t`password` text,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL,\n\tFOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON UPDATE no action ON DELETE cascade\n)"
+  },
+  {
+    "type": "table",
+    "name": "auth_rate_limit",
+    "tbl_name": "auth_rate_limit",
+    "sql": "CREATE TABLE `auth_rate_limit` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`key` text NOT NULL,\n\t`count` integer NOT NULL,\n\t`last_request` integer NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "auth_session",
+    "tbl_name": "auth_session",
+    "sql": "CREATE TABLE `auth_session` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`expires_at` integer NOT NULL,\n\t`token` text NOT NULL,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL,\n\t`ip_address` text,\n\t`user_agent` text,\n\t`user_id` text NOT NULL,\n\tFOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON UPDATE no action ON DELETE cascade\n)"
+  },
+  {
+    "type": "table",
+    "name": "auth_user",
+    "tbl_name": "auth_user",
+    "sql": "CREATE TABLE `auth_user` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`name` text NOT NULL,\n\t`email` text NOT NULL,\n\t`email_verified` integer DEFAULT false NOT NULL,\n\t`image` text,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n, `first_name` text DEFAULT '' NOT NULL, `surname` text DEFAULT '' NOT NULL, `business_name` text DEFAULT '' NOT NULL, `abn` text DEFAULT '' NOT NULL, `address` text DEFAULT '' NOT NULL, `phone` text DEFAULT '' NOT NULL, `rec` text DEFAULT '' NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "auth_verification",
+    "tbl_name": "auth_verification",
+    "sql": "CREATE TABLE `auth_verification` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`identifier` text NOT NULL,\n\t`value` text NOT NULL,\n\t`expires_at` integer NOT NULL,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "billing_accounts",
+    "tbl_name": "billing_accounts",
+    "sql": "CREATE TABLE `billing_accounts` (\n\t`owner` text PRIMARY KEY NOT NULL,\n\t`customer_id` text NOT NULL,\n\t`checkout_lock` integer\n)"
+  },
+  {
+    "type": "table",
+    "name": "builders",
+    "tbl_name": "builders",
+    "sql": "CREATE TABLE `builders` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`name` text NOT NULL,\n\t`name_key` text NOT NULL,\n\t`colour` text NOT NULL,\n\t`status` text DEFAULT 'Active' NOT NULL,\n\t`data` text DEFAULT '{}' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "company_members",
+    "tbl_name": "company_members",
+    "sql": "CREATE TABLE `company_members` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`email` text NOT NULL,\n\t`name` text NOT NULL,\n\t`user_id` text,\n\t`role` text DEFAULT 'member' NOT NULL,\n\t`permissions` text DEFAULT '{}' NOT NULL,\n\t`status` text DEFAULT 'pending' NOT NULL,\n\t`token_hash` text,\n\t`expires` text,\n\t`created` text NOT NULL\n, `seat_type` text DEFAULT 'office' NOT NULL, `project_access_version` integer DEFAULT 0 NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "customer_messages",
+    "tbl_name": "customer_messages",
+    "sql": "CREATE TABLE `customer_messages` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`recipient` text DEFAULT '' NOT NULL,\n\t`ticket_id` text DEFAULT '' NOT NULL,\n\t`subject` text NOT NULL,\n\t`body` text NOT NULL,\n\t`author` text NOT NULL,\n\t`created` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "deletion_requests",
+    "tbl_name": "deletion_requests",
+    "sql": "CREATE TABLE `deletion_requests` (\n\t`owner` text PRIMARY KEY NOT NULL,\n\t`status` text NOT NULL,\n\t`reason` text NOT NULL,\n\t`requested` text NOT NULL,\n\t`eligible` text NOT NULL,\n\t`actor` text NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "feedback",
+    "tbl_name": "feedback",
+    "sql": "CREATE TABLE `feedback` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`sender_id` text NOT NULL,\n\t`sender_name` text NOT NULL,\n\t`sender_email` text NOT NULL,\n\t`type` text NOT NULL,\n\t`impact` text DEFAULT '' NOT NULL,\n\t`subject` text NOT NULL,\n\t`message` text NOT NULL,\n\t`project_id` text DEFAULT '' NOT NULL,\n\t`project_name` text DEFAULT '' NOT NULL,\n\t`section` text DEFAULT '' NOT NULL,\n\t`status` text DEFAULT 'New' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n, `resolved_at` text)"
+  },
+  {
+    "type": "table",
+    "name": "file_folders",
+    "tbl_name": "file_folders",
+    "sql": "CREATE TABLE `file_folders` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`project_id` text NOT NULL,\n\t`category` text NOT NULL,\n\t`name` text NOT NULL,\n\t`name_key` text NOT NULL,\n\t`created` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "files",
+    "tbl_name": "files",
+    "sql": "CREATE TABLE `files` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`project_id` text NOT NULL,\n\t`category` text NOT NULL,\n\t`name` text NOT NULL,\n\t`mime` text NOT NULL,\n\t`size` integer NOT NULL,\n\t`created` text NOT NULL\n, `folder_id` text DEFAULT '' NOT NULL, `archived` integer DEFAULT false NOT NULL, `current_revision_id` text DEFAULT '' NOT NULL, `revision_number` integer DEFAULT 1 NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "message_reads",
+    "tbl_name": "message_reads",
+    "sql": "CREATE TABLE `message_reads` (\n\t`message_id` text NOT NULL,\n\t`user_id` text NOT NULL,\n\t`read` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "om_manuals",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE TABLE `om_manuals` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`project_id` text NOT NULL,\n\t`status` text DEFAULT 'Draft' NOT NULL,\n\t`data` text NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "payroll_config",
+    "tbl_name": "payroll_config",
+    "sql": "CREATE TABLE `payroll_config` (\n\t`owner` text PRIMARY KEY NOT NULL,\n\t`data` text NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "payroll_reviews",
+    "tbl_name": "payroll_reviews",
+    "sql": "CREATE TABLE `payroll_reviews` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`start` text NOT NULL,\n\t`end` text NOT NULL,\n\t`fingerprint` text NOT NULL,\n\t`data` text NOT NULL,\n\t`state` text DEFAULT 'Approved' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`sync_status` text DEFAULT 'Not sent' NOT NULL,\n\t`external_ids` text DEFAULT '{}' NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "plan_revisions",
+    "tbl_name": "plan_revisions",
+    "sql": "CREATE TABLE `plan_revisions` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`file_id` text NOT NULL,\n\t`number` integer NOT NULL,\n\t`label` text NOT NULL,\n\t`note` text DEFAULT '' NOT NULL,\n\t`name` text NOT NULL,\n\t`mime` text NOT NULL,\n\t`size` integer NOT NULL,\n\t`created` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "platform_accounts",
+    "tbl_name": "platform_accounts",
+    "sql": "CREATE TABLE `platform_accounts` (\n\t`owner` text PRIMARY KEY NOT NULL,\n\t`status` text DEFAULT 'Active' NOT NULL,\n\t`reason` text DEFAULT '' NOT NULL,\n\t`notes` text DEFAULT '' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "platform_audit",
+    "tbl_name": "platform_audit",
+    "sql": "CREATE TABLE `platform_audit` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`actor` text NOT NULL,\n\t`action` text NOT NULL,\n\t`target` text NOT NULL,\n\t`owner` text DEFAULT '' NOT NULL,\n\t`detail` text NOT NULL,\n\t`created` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "platform_operators",
+    "tbl_name": "platform_operators",
+    "sql": "CREATE TABLE `platform_operators` (\n\t`email` text PRIMARY KEY NOT NULL,\n\t`role` text NOT NULL,\n\t`active` integer DEFAULT 1 NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "platform_usage",
+    "tbl_name": "platform_usage",
+    "sql": "CREATE TABLE `platform_usage` (\n\t`owner` text NOT NULL,\n\t`user_id` text NOT NULL,\n\t`day` text NOT NULL,\n\t`section` text NOT NULL,\n\t`views` integer DEFAULT 1 NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "platform_users",
+    "tbl_name": "platform_users",
+    "sql": "CREATE TABLE `platform_users` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`name` text NOT NULL,\n\t`email` text NOT NULL,\n\t`status` text DEFAULT 'Active' NOT NULL,\n\t`first_seen` text NOT NULL,\n\t`last_seen` text NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "project_members",
+    "tbl_name": "project_members",
+    "sql": "CREATE TABLE `project_members` (\n\t`owner` text NOT NULL,\n\t`project_id` text NOT NULL,\n\t`member_id` text NOT NULL,\n\tPRIMARY KEY(`owner`, `project_id`, `member_id`),\n\tFOREIGN KEY (`project_id`,`owner`) REFERENCES `projects`(`id`,`owner`) ON UPDATE no action ON DELETE cascade,\n\tFOREIGN KEY (`member_id`,`owner`) REFERENCES `company_members`(`id`,`owner`) ON UPDATE no action ON DELETE cascade\n)"
+  },
+  {
+    "type": "table",
+    "name": "projects",
+    "tbl_name": "projects",
+    "sql": "CREATE TABLE `projects` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`name` text NOT NULL,\n\t`client` text DEFAULT '' NOT NULL,\n\t`builder` text DEFAULT '' NOT NULL,\n\t`address` text DEFAULT '' NOT NULL,\n\t`number` text DEFAULT '' NOT NULL,\n\t`contract` real DEFAULT 0 NOT NULL,\n\t`budget_hours` real DEFAULT 0 NOT NULL,\n\t`status` text DEFAULT 'Active' NOT NULL,\n\t`created` text NOT NULL\n, `setup` text DEFAULT '{}' NOT NULL, `last_activity` text DEFAULT '' NOT NULL, `builder_id` text DEFAULT '' NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "records",
+    "tbl_name": "records",
+    "sql": "CREATE TABLE `records` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`project_id` text NOT NULL,\n\t`kind` text NOT NULL,\n\t`title` text DEFAULT '' NOT NULL,\n\t`status` text DEFAULT '' NOT NULL,\n\t`data` text DEFAULT '{}' NOT NULL,\n\t`created` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "review_activity",
+    "tbl_name": "review_activity",
+    "sql": "CREATE TABLE `review_activity` (\n\t`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,\n\t`owner` text NOT NULL,\n\t`project_id` text NOT NULL,\n\t`source_type` text NOT NULL,\n\t`source_id` text NOT NULL,\n\t`category` text NOT NULL,\n\t`title` text NOT NULL,\n\t`operation` text NOT NULL,\n\t`before_data` text,\n\t`after_data` text,\n\t`occurred` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "review_config",
+    "tbl_name": "review_config",
+    "sql": "CREATE TABLE `review_config` (\n\t`key` text PRIMARY KEY NOT NULL,\n\t`value` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "review_decisions",
+    "tbl_name": "review_decisions",
+    "sql": "CREATE TABLE `review_decisions` (\n\t`event_id` integer PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`decision` text NOT NULL,\n\t`actor` text NOT NULL,\n\t`decided` text NOT NULL,\n\t`task_id` text\n)"
+  },
+  {
+    "type": "table",
+    "name": "safety_docs",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE TABLE `safety_docs` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`project_id` text DEFAULT '' NOT NULL,\n\t`type` text NOT NULL,\n\t`title` text NOT NULL,\n\t`category` text NOT NULL,\n\t`status` text DEFAULT 'Draft' NOT NULL,\n\t`data` text NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "schedule_entries",
+    "tbl_name": "schedule_entries",
+    "sql": "CREATE TABLE `schedule_entries` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`worker_key` text DEFAULT '' NOT NULL,\n\t`worker_name` text DEFAULT '' NOT NULL,\n\t`project_id` text DEFAULT '' NOT NULL,\n\t`project_name` text DEFAULT '' NOT NULL,\n\t`kind` text NOT NULL,\n\t`date` text NOT NULL,\n\t`start` text DEFAULT '' NOT NULL,\n\t`end` text DEFAULT '' NOT NULL,\n\t`break_minutes` integer DEFAULT 0 NOT NULL,\n\t`notes` text DEFAULT '' NOT NULL,\n\t`leave_type` text DEFAULT '' NOT NULL,\n\t`role` text DEFAULT '' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "settings",
+    "tbl_name": "settings",
+    "sql": "CREATE TABLE `settings` (\n\t`owner` text PRIMARY KEY NOT NULL,\n\t`company` text DEFAULT '' NOT NULL,\n\t`colour` text DEFAULT '#1769f4' NOT NULL,\n\t`theme` text DEFAULT 'Light' NOT NULL\n, `abn` text DEFAULT '' NOT NULL, `address` text DEFAULT '' NOT NULL, `email` text DEFAULT '' NOT NULL, `phone` text DEFAULT '' NOT NULL, `logo_file_id` text DEFAULT '' NOT NULL, `staff_colours` text DEFAULT '{}' NOT NULL, `rec` text DEFAULT '' NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "staff_demos",
+    "tbl_name": "staff_demos",
+    "sql": "CREATE TABLE `staff_demos` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`lead_id` text NOT NULL,\n\t`title` text NOT NULL,\n\t`start` text NOT NULL,\n\t`end` text NOT NULL,\n\t`status` text DEFAULT 'Planned' NOT NULL,\n\t`assignee` text DEFAULT '' NOT NULL,\n\t`notes` text DEFAULT '' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "staff_integration_settings",
+    "tbl_name": "staff_integration_settings",
+    "sql": "CREATE TABLE `staff_integration_settings` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`support_email` text DEFAULT '' NOT NULL,\n\t`info_email` text DEFAULT '' NOT NULL,\n\t`booking_url` text DEFAULT '' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "staff_leads",
+    "tbl_name": "staff_leads",
+    "sql": "CREATE TABLE `staff_leads` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`name` text NOT NULL,\n\t`company` text DEFAULT '' NOT NULL,\n\t`email` text DEFAULT '' NOT NULL,\n\t`phone` text DEFAULT '' NOT NULL,\n\t`stage` text DEFAULT 'New' NOT NULL,\n\t`assignee` text DEFAULT '' NOT NULL,\n\t`follow_up` text DEFAULT '' NOT NULL,\n\t`notes` text DEFAULT '' NOT NULL,\n\t`source` text DEFAULT 'Manual' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "staff_tasks",
+    "tbl_name": "staff_tasks",
+    "sql": "CREATE TABLE `staff_tasks` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`title` text NOT NULL,\n\t`details` text DEFAULT '' NOT NULL,\n\t`category` text NOT NULL,\n\t`status` text DEFAULT 'Review' NOT NULL,\n\t`priority` text DEFAULT 'Normal' NOT NULL,\n\t`assignee` text DEFAULT '' NOT NULL,\n\t`due` text DEFAULT '' NOT NULL,\n\t`company_owner` text DEFAULT '' NOT NULL,\n\t`source_type` text DEFAULT 'manual' NOT NULL,\n\t`source_id` text DEFAULT '' NOT NULL,\n\t`source_key` text NOT NULL,\n\t`fingerprint` text DEFAULT '' NOT NULL,\n\t`source_state` text DEFAULT '' NOT NULL,\n\t`outcome` text DEFAULT '' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`created` text NOT NULL,\n\t`updated` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "subscriptions",
+    "tbl_name": "subscriptions",
+    "sql": "CREATE TABLE `subscriptions` (\n\t`owner` text PRIMARY KEY NOT NULL,\n\t`plan` text DEFAULT 'unconfigured' NOT NULL,\n\t`status` text DEFAULT 'Not activated' NOT NULL,\n\t`requested_plan` text,\n\t`requested_at` text\n, `requested_configuration` text DEFAULT '{}' NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "support_notes",
+    "tbl_name": "support_notes",
+    "sql": "CREATE TABLE `support_notes` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`feedback_id` text NOT NULL,\n\t`author` text NOT NULL,\n\t`body` text NOT NULL,\n\t`created` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "support_sessions",
+    "tbl_name": "support_sessions",
+    "sql": "CREATE TABLE `support_sessions` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`actor` text NOT NULL,\n\t`owner` text NOT NULL,\n\t`user_id` text NOT NULL,\n\t`reason` text NOT NULL,\n\t`expires` text NOT NULL,\n\t`created` text NOT NULL\n)"
+  },
+  {
+    "type": "table",
+    "name": "support_tickets",
+    "tbl_name": "support_tickets",
+    "sql": "CREATE TABLE `support_tickets` (\n\t`feedback_id` text PRIMARY KEY NOT NULL,\n\t`category` text NOT NULL,\n\t`priority` text NOT NULL,\n\t`assignee` text DEFAULT '' NOT NULL,\n\t`version` integer DEFAULT 1 NOT NULL,\n\t`updated` text NOT NULL\n, `topic` text DEFAULT '' NOT NULL)"
+  },
+  {
+    "type": "table",
+    "name": "upload_outcomes",
+    "tbl_name": "upload_outcomes",
+    "sql": "CREATE TABLE `upload_outcomes` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`owner` text NOT NULL,\n\t`route` text NOT NULL,\n\t`status` integer NOT NULL,\n\t`created` text NOT NULL\n)"
+  },
+  {
+    "type": "index",
+    "name": "auth_account_user",
+    "tbl_name": "auth_account",
+    "sql": "CREATE INDEX `auth_account_user` ON `auth_account` (`user_id`)"
+  },
+  {
+    "type": "index",
+    "name": "auth_rate_limit_key_unique",
+    "tbl_name": "auth_rate_limit",
+    "sql": "CREATE UNIQUE INDEX `auth_rate_limit_key_unique` ON `auth_rate_limit` (`key`)"
+  },
+  {
+    "type": "index",
+    "name": "auth_session_token_unique",
+    "tbl_name": "auth_session",
+    "sql": "CREATE UNIQUE INDEX `auth_session_token_unique` ON `auth_session` (`token`)"
+  },
+  {
+    "type": "index",
+    "name": "auth_session_user",
+    "tbl_name": "auth_session",
+    "sql": "CREATE INDEX `auth_session_user` ON `auth_session` (`user_id`)"
+  },
+  {
+    "type": "index",
+    "name": "auth_user_email_unique",
+    "tbl_name": "auth_user",
+    "sql": "CREATE UNIQUE INDEX `auth_user_email_unique` ON `auth_user` (`email`)"
+  },
+  {
+    "type": "index",
+    "name": "auth_verification_identifier",
+    "tbl_name": "auth_verification",
+    "sql": "CREATE INDEX `auth_verification_identifier` ON `auth_verification` (`identifier`)"
+  },
+  {
+    "type": "index",
+    "name": "billing_accounts_customer_id_unique",
+    "tbl_name": "billing_accounts",
+    "sql": "CREATE UNIQUE INDEX `billing_accounts_customer_id_unique` ON `billing_accounts` (`customer_id`)"
+  },
+  {
+    "type": "index",
+    "name": "company_members_token_hash_unique",
+    "tbl_name": "company_members",
+    "sql": "CREATE UNIQUE INDEX `company_members_token_hash_unique` ON `company_members` (`token_hash`)"
+  },
+  {
+    "type": "index",
+    "name": "company_members_user_id_unique",
+    "tbl_name": "company_members",
+    "sql": "CREATE UNIQUE INDEX `company_members_user_id_unique` ON `company_members` (`user_id`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_builders_owner_name",
+    "tbl_name": "builders",
+    "sql": "CREATE UNIQUE INDEX `idx_builders_owner_name` ON `builders` (`owner`,`name_key`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_company_members_id_owner",
+    "tbl_name": "company_members",
+    "sql": "CREATE UNIQUE INDEX `idx_company_members_id_owner` ON `company_members` (`id`,`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_company_members_owner",
+    "tbl_name": "company_members",
+    "sql": "CREATE INDEX `idx_company_members_owner` ON `company_members` (`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_customer_messages_owner",
+    "tbl_name": "customer_messages",
+    "sql": "CREATE INDEX `idx_customer_messages_owner` ON `customer_messages` (`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_feedback_owner_created",
+    "tbl_name": "feedback",
+    "sql": "CREATE INDEX `idx_feedback_owner_created` ON `feedback` (`owner`,`created`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_file_folders_project_category_name",
+    "tbl_name": "file_folders",
+    "sql": "CREATE UNIQUE INDEX `idx_file_folders_project_category_name` ON `file_folders` (`project_id`,`category`,`name_key`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_files_project_category",
+    "tbl_name": "files",
+    "sql": "CREATE INDEX `idx_files_project_category` ON `files` (`project_id`,`category`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_message_read",
+    "tbl_name": "message_reads",
+    "sql": "CREATE UNIQUE INDEX `idx_message_read` ON `message_reads` (`message_id`,`user_id`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_om_owner_project",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE INDEX `idx_om_owner_project` ON `om_manuals` (`owner`,`project_id`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_payroll_review_period",
+    "tbl_name": "payroll_reviews",
+    "sql": "CREATE UNIQUE INDEX `idx_payroll_review_period` ON `payroll_reviews` (`owner`,`start`,`end`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_plan_revision_number",
+    "tbl_name": "plan_revisions",
+    "sql": "CREATE UNIQUE INDEX `idx_plan_revision_number` ON `plan_revisions` (`file_id`,`number`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_platform_audit_date",
+    "tbl_name": "platform_audit",
+    "sql": "CREATE INDEX `idx_platform_audit_date` ON `platform_audit` (`created`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_platform_audit_owner",
+    "tbl_name": "platform_audit",
+    "sql": "CREATE INDEX `idx_platform_audit_owner` ON `platform_audit` (`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_platform_usage_day",
+    "tbl_name": "platform_usage",
+    "sql": "CREATE INDEX `idx_platform_usage_day` ON `platform_usage` (`day`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_platform_usage_key",
+    "tbl_name": "platform_usage",
+    "sql": "CREATE UNIQUE INDEX `idx_platform_usage_key` ON `platform_usage` (`owner`,`user_id`,`day`,`section`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_platform_users_owner",
+    "tbl_name": "platform_users",
+    "sql": "CREATE INDEX `idx_platform_users_owner` ON `platform_users` (`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_platform_users_seen",
+    "tbl_name": "platform_users",
+    "sql": "CREATE INDEX `idx_platform_users_seen` ON `platform_users` (`last_seen`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_project_members_member",
+    "tbl_name": "project_members",
+    "sql": "CREATE INDEX `idx_project_members_member` ON `project_members` (`member_id`,`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_projects_id_owner",
+    "tbl_name": "projects",
+    "sql": "CREATE UNIQUE INDEX `idx_projects_id_owner` ON `projects` (`id`,`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_projects_owner",
+    "tbl_name": "projects",
+    "sql": "CREATE INDEX `idx_projects_owner` ON `projects` (`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_records_project_kind",
+    "tbl_name": "records",
+    "sql": "CREATE INDEX `idx_records_project_kind` ON `records` (`project_id`,`kind`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_review_activity_owner_id",
+    "tbl_name": "review_activity",
+    "sql": "CREATE INDEX `idx_review_activity_owner_id` ON `review_activity` (`owner`,`id`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_review_activity_source",
+    "tbl_name": "review_activity",
+    "sql": "CREATE INDEX `idx_review_activity_source` ON `review_activity` (`owner`,`source_type`,`source_id`,`id`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_review_decisions_owner",
+    "tbl_name": "review_decisions",
+    "sql": "CREATE INDEX `idx_review_decisions_owner` ON `review_decisions` (`owner`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_safety_owner_project",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE INDEX `idx_safety_owner_project` ON `safety_docs` (`owner`,`project_id`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_schedule_owner_date",
+    "tbl_name": "schedule_entries",
+    "sql": "CREATE INDEX `idx_schedule_owner_date` ON `schedule_entries` (`owner`,`date`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_staff_demos_start",
+    "tbl_name": "staff_demos",
+    "sql": "CREATE INDEX `idx_staff_demos_start` ON `staff_demos` (`start`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_staff_leads_stage",
+    "tbl_name": "staff_leads",
+    "sql": "CREATE INDEX `idx_staff_leads_stage` ON `staff_leads` (`stage`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_staff_tasks_category_status",
+    "tbl_name": "staff_tasks",
+    "sql": "CREATE INDEX `idx_staff_tasks_category_status` ON `staff_tasks` (`category`,`status`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_staff_tasks_source",
+    "tbl_name": "staff_tasks",
+    "sql": "CREATE UNIQUE INDEX `idx_staff_tasks_source` ON `staff_tasks` (`source_key`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_support_notes_feedback",
+    "tbl_name": "support_notes",
+    "sql": "CREATE INDEX `idx_support_notes_feedback` ON `support_notes` (`feedback_id`,`created`)"
+  },
+  {
+    "type": "index",
+    "name": "idx_upload_outcomes_created",
+    "tbl_name": "upload_outcomes",
+    "sql": "CREATE INDEX `idx_upload_outcomes_created` ON `upload_outcomes` (`created`)"
+  },
+  {
+    "type": "trigger",
+    "name": "file_folders_activity_delete",
+    "tbl_name": "file_folders",
+    "sql": "CREATE TRIGGER file_folders_activity_delete AFTER DELETE ON file_folders BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=OLD.project_id AND owner=OLD.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "file_folders_activity_insert",
+    "tbl_name": "file_folders",
+    "sql": "CREATE TRIGGER file_folders_activity_insert AFTER INSERT ON file_folders BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "file_folders_activity_update",
+    "tbl_name": "file_folders",
+    "sql": "CREATE TRIGGER file_folders_activity_update AFTER UPDATE ON file_folders BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "files_activity_delete",
+    "tbl_name": "files",
+    "sql": "CREATE TRIGGER files_activity_delete AFTER DELETE ON files BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=OLD.project_id AND owner=OLD.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "files_activity_insert",
+    "tbl_name": "files",
+    "sql": "CREATE TRIGGER files_activity_insert AFTER INSERT ON files BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "files_activity_update",
+    "tbl_name": "files",
+    "sql": "CREATE TRIGGER files_activity_update AFTER UPDATE ON files BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "limit_field_insert",
+    "tbl_name": "company_members",
+    "sql": "CREATE TRIGGER limit_field_insert BEFORE INSERT ON company_members WHEN NEW.status<>'disabled' AND NEW.seat_type='field' AND (SELECT COUNT(*)+1 FROM company_members WHERE owner=NEW.owner AND status<>'disabled' AND seat_type='field')>(SELECT CASE WHEN expires>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN COALESCE(override_field,field) ELSE field END FROM account_limits WHERE owner=NEW.owner AND enabled=1) BEGIN SELECT RAISE(ABORT,'PLANFLO_LIMIT_field'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "limit_field_update",
+    "tbl_name": "company_members",
+    "sql": "CREATE TRIGGER limit_field_update BEFORE UPDATE OF status,seat_type ON company_members WHEN NEW.status<>'disabled' AND NEW.seat_type='field' AND (OLD.status='disabled' OR OLD.seat_type<>NEW.seat_type) AND (SELECT COUNT(*)+1 FROM company_members WHERE owner=NEW.owner AND status<>'disabled' AND seat_type='field')>(SELECT CASE WHEN expires>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN COALESCE(override_field,field) ELSE field END FROM account_limits WHERE owner=NEW.owner AND enabled=1) BEGIN SELECT RAISE(ABORT,'PLANFLO_LIMIT_field'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "limit_office_insert",
+    "tbl_name": "company_members",
+    "sql": "CREATE TRIGGER limit_office_insert BEFORE INSERT ON company_members WHEN NEW.status<>'disabled' AND NEW.seat_type='office' AND (SELECT COUNT(*)+2 FROM company_members WHERE owner=NEW.owner AND status<>'disabled' AND seat_type='office')>(SELECT CASE WHEN expires>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN COALESCE(override_office,office) ELSE office END FROM account_limits WHERE owner=NEW.owner AND enabled=1) BEGIN SELECT RAISE(ABORT,'PLANFLO_LIMIT_office'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "limit_office_update",
+    "tbl_name": "company_members",
+    "sql": "CREATE TRIGGER limit_office_update BEFORE UPDATE OF status,seat_type ON company_members WHEN NEW.status<>'disabled' AND NEW.seat_type='office' AND (OLD.status='disabled' OR OLD.seat_type<>NEW.seat_type) AND (SELECT COUNT(*)+2 FROM company_members WHERE owner=NEW.owner AND status<>'disabled' AND seat_type='office')>(SELECT CASE WHEN expires>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN COALESCE(override_office,office) ELSE office END FROM account_limits WHERE owner=NEW.owner AND enabled=1) BEGIN SELECT RAISE(ABORT,'PLANFLO_LIMIT_office'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "limit_project_insert",
+    "tbl_name": "projects",
+    "sql": "CREATE TRIGGER limit_project_insert BEFORE INSERT ON projects WHEN NEW.status IN ('Active','On hold') AND (SELECT COUNT(*)+1 FROM projects WHERE owner=NEW.owner AND status IN ('Active','On hold'))>(SELECT CASE WHEN expires>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN COALESCE(override_projects,projects) ELSE projects END FROM account_limits WHERE owner=NEW.owner AND enabled=1) BEGIN SELECT RAISE(ABORT,'PLANFLO_LIMIT_projects'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "limit_project_restore",
+    "tbl_name": "projects",
+    "sql": "CREATE TRIGGER limit_project_restore BEFORE UPDATE OF status ON projects WHEN NEW.status IN ('Active','On hold') AND OLD.status NOT IN ('Active','On hold') AND (SELECT COUNT(*)+1 FROM projects WHERE owner=NEW.owner AND status IN ('Active','On hold'))>(SELECT CASE WHEN expires>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN COALESCE(override_projects,projects) ELSE projects END FROM account_limits WHERE owner=NEW.owner AND enabled=1) BEGIN SELECT RAISE(ABORT,'PLANFLO_LIMIT_projects'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "limit_storage_file",
+    "tbl_name": "files",
+    "sql": "CREATE TRIGGER limit_storage_file BEFORE INSERT ON files WHEN 1=1 AND (COALESCE((SELECT SUM(size) FROM files WHERE owner=NEW.owner),0)+COALESCE((SELECT SUM(r.size) FROM plan_revisions r JOIN files f ON f.id=r.file_id WHERE f.owner=NEW.owner AND r.id<>COALESCE(NULLIF(f.current_revision_id,''),f.id)),0)+NEW.size)>(SELECT CASE WHEN expires>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN COALESCE(override_bytes,bytes) ELSE bytes END FROM account_limits WHERE owner=NEW.owner AND enabled=1) BEGIN SELECT RAISE(ABORT,'PLANFLO_LIMIT_bytes'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "limit_storage_revision",
+    "tbl_name": "plan_revisions",
+    "sql": "CREATE TRIGGER limit_storage_revision BEFORE INSERT ON plan_revisions WHEN NEW.id<>NEW.file_id AND (COALESCE((SELECT SUM(size) FROM files WHERE owner=(SELECT owner FROM files WHERE id=NEW.file_id)),0)+COALESCE((SELECT SUM(r.size) FROM plan_revisions r JOIN files f ON f.id=r.file_id WHERE f.owner=(SELECT owner FROM files WHERE id=NEW.file_id) AND r.id<>COALESCE(NULLIF(f.current_revision_id,''),f.id)),0)+NEW.size)>(SELECT CASE WHEN expires>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN COALESCE(override_bytes,bytes) ELSE bytes END FROM account_limits WHERE owner=(SELECT owner FROM files WHERE id=NEW.file_id) AND enabled=1) BEGIN SELECT RAISE(ABORT,'PLANFLO_LIMIT_bytes'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "om_manuals_activity_delete",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE TRIGGER om_manuals_activity_delete AFTER DELETE ON om_manuals BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=OLD.project_id AND owner=OLD.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "om_manuals_activity_insert",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE TRIGGER om_manuals_activity_insert AFTER INSERT ON om_manuals BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "om_manuals_activity_update",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE TRIGGER om_manuals_activity_update AFTER UPDATE ON om_manuals BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_app_settings",
+    "tbl_name": "app_settings",
+    "sql": "CREATE TRIGGER prevent_member_personal_app_settings BEFORE INSERT ON app_settings WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_billing_accounts",
+    "tbl_name": "billing_accounts",
+    "sql": "CREATE TRIGGER prevent_member_personal_billing_accounts BEFORE INSERT ON billing_accounts WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_builders",
+    "tbl_name": "builders",
+    "sql": "CREATE TRIGGER prevent_member_personal_builders BEFORE INSERT ON builders WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_company_members",
+    "tbl_name": "company_members",
+    "sql": "CREATE TRIGGER prevent_member_personal_company_members BEFORE INSERT ON company_members WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_file_folders",
+    "tbl_name": "file_folders",
+    "sql": "CREATE TRIGGER prevent_member_personal_file_folders BEFORE INSERT ON file_folders WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_files",
+    "tbl_name": "files",
+    "sql": "CREATE TRIGGER prevent_member_personal_files BEFORE INSERT ON files WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_om_manuals",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE TRIGGER prevent_member_personal_om_manuals BEFORE INSERT ON om_manuals WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_payroll_config",
+    "tbl_name": "payroll_config",
+    "sql": "CREATE TRIGGER prevent_member_personal_payroll_config BEFORE INSERT ON payroll_config WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_payroll_reviews",
+    "tbl_name": "payroll_reviews",
+    "sql": "CREATE TRIGGER prevent_member_personal_payroll_reviews BEFORE INSERT ON payroll_reviews WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_projects",
+    "tbl_name": "projects",
+    "sql": "CREATE TRIGGER prevent_member_personal_projects BEFORE INSERT ON projects WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_records",
+    "tbl_name": "records",
+    "sql": "CREATE TRIGGER prevent_member_personal_records BEFORE INSERT ON records WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_safety_docs",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE TRIGGER prevent_member_personal_safety_docs BEFORE INSERT ON safety_docs WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_schedule_entries",
+    "tbl_name": "schedule_entries",
+    "sql": "CREATE TRIGGER prevent_member_personal_schedule_entries BEFORE INSERT ON schedule_entries WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_settings",
+    "tbl_name": "settings",
+    "sql": "CREATE TRIGGER prevent_member_personal_settings BEFORE INSERT ON settings WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "prevent_member_personal_subscriptions",
+    "tbl_name": "subscriptions",
+    "sql": "CREATE TRIGGER prevent_member_personal_subscriptions BEFORE INSERT ON subscriptions WHEN EXISTS(SELECT 1 FROM company_members WHERE user_id=NEW.owner) BEGIN SELECT RAISE(ABORT,'PLANFLO_MEMBERSHIP_CHANGED'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "projects_activity_insert",
+    "tbl_name": "projects",
+    "sql": "CREATE TRIGGER projects_activity_insert AFTER INSERT ON projects BEGIN UPDATE projects SET last_activity=NEW.created WHERE id=NEW.id; END"
+  },
+  {
+    "type": "trigger",
+    "name": "projects_activity_update",
+    "tbl_name": "projects",
+    "sql": "CREATE TRIGGER projects_activity_update AFTER UPDATE OF name,client,builder,address,number,contract,budget_hours,status,setup ON projects BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.id; END"
+  },
+  {
+    "type": "trigger",
+    "name": "protect_owned_workspace_join",
+    "tbl_name": "company_members",
+    "sql": "CREATE TRIGGER protect_owned_workspace_join BEFORE UPDATE OF user_id ON company_members WHEN NEW.user_id IS NOT NULL AND OLD.user_id IS NULL AND (EXISTS(SELECT 1 FROM settings WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM projects WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM records WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM files WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM file_folders WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM company_members WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM builders WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM safety_docs WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM om_manuals WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM schedule_entries WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM subscriptions WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM billing_accounts WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM app_settings WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM payroll_config WHERE owner=NEW.user_id) OR EXISTS(SELECT 1 FROM payroll_reviews WHERE owner=NEW.user_id)) BEGIN SELECT RAISE(ABORT,'PLANFLO_OWNER_HAS_WORKSPACE'); END"
+  },
+  {
+    "type": "trigger",
+    "name": "records_activity_delete",
+    "tbl_name": "records",
+    "sql": "CREATE TRIGGER records_activity_delete AFTER DELETE ON records BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=OLD.project_id AND owner=OLD.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "records_activity_insert",
+    "tbl_name": "records",
+    "sql": "CREATE TRIGGER records_activity_insert AFTER INSERT ON records BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "records_activity_update",
+    "tbl_name": "records",
+    "sql": "CREATE TRIGGER records_activity_update AFTER UPDATE ON records BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "review_files_delete",
+    "tbl_name": "files",
+    "sql": "CREATE TRIGGER review_files_delete AFTER DELETE ON files WHEN OLD.category NOT IN ('logo','builder-logo') BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (OLD.owner,OLD.project_id,'files',OLD.id,'file:'||OLD.category,OLD.name,'delete',json_object('name',OLD.name,'category',OLD.category,'revision',OLD.revision_number,'archived',OLD.archived,'size',OLD.size),NULL,strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_files_insert",
+    "tbl_name": "files",
+    "sql": "CREATE TRIGGER review_files_insert AFTER INSERT ON files WHEN NEW.category NOT IN ('logo','builder-logo') BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (NEW.owner,NEW.project_id,'files',NEW.id,'file:'||NEW.category,NEW.name,'insert',NULL,json_object('name',NEW.name,'category',NEW.category,'revision',NEW.revision_number,'archived',NEW.archived,'size',NEW.size),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_files_update",
+    "tbl_name": "files",
+    "sql": "CREATE TRIGGER review_files_update AFTER UPDATE ON files WHEN NEW.category NOT IN ('logo','builder-logo') AND (NEW.name IS NOT OLD.name OR NEW.current_revision_id IS NOT OLD.current_revision_id OR NEW.archived IS NOT OLD.archived OR NEW.folder_id IS NOT OLD.folder_id) BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (NEW.owner,NEW.project_id,'files',NEW.id,'file:'||NEW.category,NEW.name,'update',json_object('name',OLD.name,'category',OLD.category,'revision',OLD.revision_number,'archived',OLD.archived,'size',OLD.size),json_object('name',NEW.name,'category',NEW.category,'revision',NEW.revision_number,'archived',NEW.archived,'size',NEW.size),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_om_manuals_delete",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE TRIGGER review_om_manuals_delete AFTER DELETE ON om_manuals WHEN 1=1 BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (OLD.owner,OLD.project_id,'om_manuals',OLD.id,'om','O&M manual','delete',json_object('status',OLD.status,'data',json(OLD.data)),NULL,strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_om_manuals_insert",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE TRIGGER review_om_manuals_insert AFTER INSERT ON om_manuals WHEN 1=1 BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (NEW.owner,NEW.project_id,'om_manuals',NEW.id,'om','O&M manual','insert',NULL,json_object('status',NEW.status,'data',json(NEW.data)),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_om_manuals_update",
+    "tbl_name": "om_manuals",
+    "sql": "CREATE TRIGGER review_om_manuals_update AFTER UPDATE ON om_manuals WHEN 1=1 AND (NEW.data IS NOT OLD.data OR NEW.status IS NOT OLD.status) BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (NEW.owner,NEW.project_id,'om_manuals',NEW.id,'om','O&M manual','update',json_object('status',OLD.status,'data',json(OLD.data)),json_object('status',NEW.status,'data',json(NEW.data)),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_records_delete",
+    "tbl_name": "records",
+    "sql": "CREATE TRIGGER review_records_delete AFTER DELETE ON records WHEN OLD.kind IN ('task','time','cost','rfi','variation','diary','ewp','test-tag') AND (OLD.kind<>'task' OR json_extract(OLD.data,'$.dailyReviewEvent') IS NULL) BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (OLD.owner,OLD.project_id,'records',OLD.id,'record:'||OLD.kind,OLD.title,'delete',json_object('title',OLD.title,'status',OLD.status,'data',json(OLD.data)),NULL,strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_records_insert",
+    "tbl_name": "records",
+    "sql": "CREATE TRIGGER review_records_insert AFTER INSERT ON records WHEN NEW.kind IN ('task','time','cost','rfi','variation','diary','ewp','test-tag') AND (NEW.kind<>'task' OR json_extract(NEW.data,'$.dailyReviewEvent') IS NULL) BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (NEW.owner,NEW.project_id,'records',NEW.id,'record:'||NEW.kind,NEW.title,'insert',NULL,json_object('title',NEW.title,'status',NEW.status,'data',json(NEW.data)),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_records_update",
+    "tbl_name": "records",
+    "sql": "CREATE TRIGGER review_records_update AFTER UPDATE ON records WHEN NEW.kind IN ('task','time','cost','rfi','variation','diary','ewp','test-tag') AND (NEW.kind<>'task' OR json_extract(NEW.data,'$.dailyReviewEvent') IS NULL) AND (NEW.title IS NOT OLD.title OR NEW.status IS NOT OLD.status OR NEW.data IS NOT OLD.data) BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (NEW.owner,NEW.project_id,'records',NEW.id,'record:'||NEW.kind,NEW.title,'update',json_object('title',OLD.title,'status',OLD.status,'data',json(OLD.data)),json_object('title',NEW.title,'status',NEW.status,'data',json(NEW.data)),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_safety_docs_delete",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE TRIGGER review_safety_docs_delete AFTER DELETE ON safety_docs WHEN OLD.type='record' BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (OLD.owner,OLD.project_id,'safety_docs',OLD.id,'safety',OLD.title,'delete',json_object('title',OLD.title,'status',OLD.status,'data',json(OLD.data)),NULL,strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_safety_docs_insert",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE TRIGGER review_safety_docs_insert AFTER INSERT ON safety_docs WHEN NEW.type='record' BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (NEW.owner,NEW.project_id,'safety_docs',NEW.id,'safety',NEW.title,'insert',NULL,json_object('title',NEW.title,'status',NEW.status,'data',json(NEW.data)),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "review_safety_docs_update",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE TRIGGER review_safety_docs_update AFTER UPDATE ON safety_docs WHEN NEW.type='record' AND (NEW.data IS NOT OLD.data OR NEW.status IS NOT OLD.status OR NEW.title IS NOT OLD.title) BEGIN\nINSERT INTO review_activity(owner,project_id,source_type,source_id,category,title,operation,before_data,after_data,occurred) VALUES (NEW.owner,NEW.project_id,'safety_docs',NEW.id,'safety',NEW.title,'update',json_object('title',OLD.title,'status',OLD.status,'data',json(OLD.data)),json_object('title',NEW.title,'status',NEW.status,'data',json(NEW.data)),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "safety_docs_activity_delete",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE TRIGGER safety_docs_activity_delete AFTER DELETE ON safety_docs BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=OLD.project_id AND owner=OLD.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "safety_docs_activity_insert",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE TRIGGER safety_docs_activity_insert AFTER INSERT ON safety_docs BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "safety_docs_activity_update",
+    "tbl_name": "safety_docs",
+    "sql": "CREATE TRIGGER safety_docs_activity_update AFTER UPDATE ON safety_docs BEGIN UPDATE projects SET last_activity=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=NEW.project_id AND owner=NEW.owner; END"
+  },
+  {
+    "type": "trigger",
+    "name": "staff_feedback_task_insert",
+    "tbl_name": "feedback",
+    "sql": "CREATE TRIGGER staff_feedback_task_insert AFTER INSERT ON feedback\nWHEN NEW.status NOT IN ('Resolved','Closed') AND NOT EXISTS (SELECT 1 FROM deletion_requests WHERE owner=NEW.owner AND status IN ('Purging','Purged'))\nBEGIN\n INSERT INTO staff_tasks(id,title,details,category,status,priority,company_owner,source_type,source_id,source_key,fingerprint,source_state,created,updated)\n VALUES('staff-ticket-'||NEW.id,'Review support \u00b7 '||NEW.subject,NEW.sender_email||char(10)||substr(NEW.message,1,1800)||char(10)||'Next step: review the ticket and conversation, then respond or assign follow-up.','Support','Review',CASE WHEN NEW.impact='Blocking work' THEN 'Urgent' ELSE 'Normal' END,NEW.owner,'ticket',NEW.id,'ticket:'||NEW.id,CAST(NEW.version AS TEXT),NEW.status,NEW.created,NEW.updated)\n ON CONFLICT(source_key) DO NOTHING;\nEND"
+  },
+  {
+    "type": "trigger",
+    "name": "staff_feedback_task_update",
+    "tbl_name": "feedback",
+    "sql": "CREATE TRIGGER staff_feedback_task_update AFTER UPDATE OF status,version ON feedback\nWHEN NOT EXISTS (SELECT 1 FROM deletion_requests WHERE owner=NEW.owner AND status IN ('Purging','Purged'))\nBEGIN\n UPDATE staff_tasks SET details=NEW.sender_email||char(10)||substr(NEW.message,1,1800)||char(10)||'Source status: '||NEW.status||'. Review the conversation and record the next step.',source_state=NEW.status,fingerprint=CAST(NEW.version AS TEXT),status=CASE WHEN NEW.status NOT IN ('Resolved','Closed') AND status IN ('Done','Dismissed') AND fingerprint<>CAST(NEW.version AS TEXT) THEN 'Review' ELSE status END,version=version+1,updated=NEW.updated\n WHERE source_key='ticket:'||NEW.id AND fingerprint<>CAST(NEW.version AS TEXT);\nEND"
+  }
+]

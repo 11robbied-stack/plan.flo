@@ -1,0 +1,9 @@
+{
+  "engine": "local Miniflare/workerd D1",
+  "exactSchemaEquivalence": true,
+  "repeatAll140Statements": true,
+  "seedPreserved": true,
+  "ledgerExactly27AfterRepeat": true,
+  "foreignKeyCheck": true,
+  "remoteExecuted": false
+}
