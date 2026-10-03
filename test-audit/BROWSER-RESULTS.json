@@ -1,6 +1,6 @@
 {
   "date": "2026-10-03",
-  "environment": "Installed Chrome: headless and headed; local Miniflare/workerd with disposable D1/R2, synthetic in-memory mail and blocked external HTTP",
+  "environment": "Installed Chrome, headed; local Miniflare/workerd with disposable D1/R2, synthetic mail and blocked external HTTP",
   "results": [
     {
       "name": "isolated local Worker and migrations start",
@@ -14,6 +14,16 @@
     },
     {
       "name": "browser signup queues synthetic verification",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "signup confirmation is dedicated and preserves verification gate",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "resend cooldown starts after signup",
       "pass": true,
       "detail": {}
     },
@@ -53,7 +63,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "8ea2540c-d308-4a5c-91e6-535ad238396e"
+          "id": "0c594652-5cce-4ec5-95c2-a7e81f8f4c62"
         }
       }
     },
@@ -68,7 +78,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "7da70390-a9c8-4de0-b6e4-001a5f040bbc"
+          "id": "376e6242-2eb4-439d-85f7-e40c0332c6e3"
         }
       }
     },
@@ -83,7 +93,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "780d27bf-f74f-41bb-8714-be57f270d573"
+          "id": "bd7e7ef2-e87b-4642-a0b6-3e47afbc9db8"
         }
       }
     },
@@ -93,7 +103,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "ad049785-33c5-45bb-b551-30a09fe0701d"
+          "id": "14b3179b-60f4-4f66-bb5b-1b34a1c2a3b6"
         }
       }
     },
@@ -103,7 +113,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "1b490a63-ee65-4d65-bdbe-189f5a442c51"
+          "id": "d4ce149c-acd9-4e76-810d-094b2dda6c03"
         }
       }
     },
@@ -113,7 +123,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "77f87e7b-8099-466b-b0ea-a902bc43255d"
+          "id": "492c15fc-f887-483f-b950-3169af6730d1"
         }
       }
     },
@@ -346,6 +356,71 @@
       "detail": {}
     },
     {
+      "name": "mobile check-email has no horizontal overflow",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "change email returns to empty signup and clears pending address",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "mobile login shows existing brand with no overflow",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "INVALID_TOKEN offers verification recovery",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "TOKEN_EXPIRED offers verification recovery",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "invalid recovery link offers reset request",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "invalid reset token stays in recovery and does not claim success",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "repeated signup is locked while request is pending",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "generic signup success makes no account-created or delivery claim",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "resend uses generic confirmation and restarts cooldown",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "resend rate limit displays wait and disables action",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "resend network failure permits retry",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "back during resend cancels UI work and remains at sign-in",
+      "pass": true,
+      "detail": {}
+    },
+    {
       "name": "browser routes produce no JavaScript errors",
       "pass": true,
       "detail": {
@@ -356,6 +431,7 @@
   "limitations": [
     "No real email delivery, deployed staging, payment or external provider integrations tested.",
     "Core record saves use authenticated browser fetch calls; account lifecycle, project creation, invitations, page navigation, markups and download use UI controls.",
-    "Native PDF plugin root cause remains unconfirmed; primary preview now uses verified PDF.js canvas rendering instead."
+    "Native PDF plugin root cause remains unconfirmed; primary preview now uses verified PDF.js canvas rendering instead.",
+    "New resend network/rate-limit UI branches use explicit synthetic browser responses; server rate limits and invalid/expired tokens also covered by security suite."
   ]
 }

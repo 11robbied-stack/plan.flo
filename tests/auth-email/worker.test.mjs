@@ -8,10 +8,10 @@ const request = (value=mail, options={}) => new Request('https://mail.internal/s
 const success = () => Response.json({id:'synthetic-email-id'});
 function fixture(responses=[success]) { const calls=[],delays=[];const worker=createMailWorker({fetch:async(url,options)=>{calls.push({url,...options});const next=responses[Math.min(calls.length-1,responses.length-1)];return next(options);},sleep:async ms=>{delays.push(ms);},timeoutMs:10});return {worker,calls,delays}; }
 
-test('verification, recovery and repeated requests use validated plaintext and stable opaque keys',async()=>{
+test('verification, recovery and repeated requests use branded HTML and plaintext and stable opaque keys',async()=>{
  const f=fixture();assert.equal((await f.worker.fetch(request(),env)).status,204);assert.equal((await f.worker.fetch(request(),env)).status,204);
  assert.equal(f.calls[0].headers['idempotency-key'],f.calls[1].headers['idempotency-key']);assert.match(f.calls[0].headers['idempotency-key'],/^planflo-auth-v1-[a-f0-9]{64}$/);
- const p=JSON.parse(f.calls[0].body);assert.equal(p.from,'PLAN.FLO <auth@example.test>');assert.deepEqual(p.to,[mail.to]);assert.ok(p.text.includes(mail.url));assert.equal(p.html,undefined);assert.equal(f.calls[0].url,'https://api.resend.com/emails');assert.equal(f.calls[0].redirect,'manual');
+ const p=JSON.parse(f.calls[0].body);assert.equal(p.from,'PLAN.FLO <auth@example.test>');assert.deepEqual(p.to,[mail.to]);assert.ok(p.text.includes(mail.url));assert.match(p.html, /Verify your email/);assert.match(p.html, /Verify email<\/a>/);assert.match(p.html, /src="https:\/\/staging.example.test\/planflo-email-icon.png"/);assert.match(p.text,/expires in 60 minutes/);assert.ok(p.html.includes(mail.url.replaceAll('&','&amp;')));assert.equal(f.calls[0].url,'https://api.resend.com/emails');assert.equal(f.calls[0].redirect,'manual');
  const recovery={...mail,purpose:'recovery',url:env.PLANFLO_AUTH_ORIGIN+'/api/auth/reset-password/synthetic-token-123456?callbackURL=%2Flogin'};
  assert.equal((await f.worker.fetch(request(recovery),env)).status,204);assert.match(JSON.parse(f.calls[2].body).subject,/Reset/);assert.notEqual(f.calls[2].headers['idempotency-key'],f.calls[0].headers['idempotency-key']);
 });
@@ -45,3 +45,8 @@ test('retry-after is respected; long waits fail safely',async()=>{const f=fixtur
 test('only concurrent idempotency conflict is retryable',async()=>{for(const name of ['concurrent_idempotent_requests','invalid_idempotent_request']){const f=fixture([()=>Response.json({name},{status:409}),success]);assert.equal((await f.worker.fetch(request(),env)).status,name.startsWith('concurrent')?204:503);assert.equal(f.calls.length,name.startsWith('concurrent')?2:1);}});
 test('malformed/oversized success never acknowledges mail',async()=>{for(const make of [()=>Response.json({}),()=>new Response('bad'),()=>Response.json({id:'x'.repeat(5000)})]){const f=fixture([make]);assert.equal((await f.worker.fetch(request(),env)).status,503);}});
 test('checked-in mail deployment has no public ingress or logs',()=>{const c=JSON.parse(readFileSync(new URL('../../workers/auth-email/wrangler.staging.jsonc',import.meta.url),'utf8').replace(/^\s*\/\/.*$/gm,''));assert.equal(c.workers_dev,false);assert.equal(c.preview_urls,false);assert.deepEqual(c.routes,[]);assert.equal(c.observability.enabled,false);assert.equal(c.vars.RESEND_API_KEY,undefined);});
+
+test('HTML escapes link attributes and uses only the configured origin for its logo',async()=>{
+ const f=fixture();const value={...mail,url:mail.url+"%3Fx='quoted'%26y=%3Cscript%3E"};assert.equal((await f.worker.fetch(request(value),env)).status,204);
+ const p=JSON.parse(f.calls[0].body);assert.ok(p.html.includes('&#39;quoted&#39;'));assert.ok(!p.html.includes('<script>'));assert.equal((p.html.match(/<img /g)||[]).length,1);assert.ok(!p.html.includes(mail.to));assert.ok(p.text.includes(value.url));
+});

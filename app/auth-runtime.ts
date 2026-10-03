@@ -1,3 +1,4 @@
+import {AUTH_LINK_TTL_SECONDS} from '../shared/auth-policy.mjs';
 import {registrationFields} from './registration-profile';
 import {env} from 'cloudflare:workers';
 import {betterAuth} from 'better-auth';
@@ -18,8 +19,8 @@ export function createCustomerAuth(db:ReturnType<typeof getDb>,origin:string,sec
  return betterAuth({appName:'PLAN.FLO',baseURL:origin,basePath:'/api/auth',secret,
   database:drizzleAdapter(db,{provider:'sqlite',schema,transaction:false}),trustedOrigins:[origin],
   user:{additionalFields:Object.fromEntries(registrationFields.map(name=>[name,{type:'string' as const,required:false,defaultValue:'',returned:false}]))},
-  emailAndPassword:{enabled:true,requireEmailVerification:true,autoSignIn:false,minPasswordLength:12,maxPasswordLength:128,revokeSessionsOnPasswordReset:true,sendResetPassword:async({user,url})=>send({to:user.email,purpose:'recovery',url})},
-  emailVerification:{sendOnSignUp:true,autoSignInAfterVerification:false,expiresIn:3600,sendVerificationEmail:async({user,url})=>send({to:user.email,purpose:'verification',url})},
+  emailAndPassword:{resetPasswordTokenExpiresIn:AUTH_LINK_TTL_SECONDS,enabled:true,requireEmailVerification:true,autoSignIn:false,minPasswordLength:12,maxPasswordLength:128,revokeSessionsOnPasswordReset:true,sendResetPassword:async({user,url})=>send({to:user.email,purpose:'recovery',url})},
+  emailVerification:{sendOnSignUp:true,autoSignInAfterVerification:false,expiresIn:AUTH_LINK_TTL_SECONDS,sendVerificationEmail:async({user,url})=>send({to:user.email,purpose:'verification',url})},
   session:{expiresIn:7*86400,updateAge:86400,cookieCache:{enabled:false}},
   account:{accountLinking:{enabled:false}},
   rateLimit:{enabled:true,storage:'database',window:60,max:50,customRules:{'/sign-in/email':{window:60,max:5},'/sign-up/email':{window:60,max:5},'/request-password-reset':{window:60,max:3},'/send-verification-email':{window:60,max:3}}},

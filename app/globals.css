@@ -222,3 +222,39 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 
 .welcome-card form textarea{width:100%;padding:10px 12px;border:1px solid #b9c2cf;border-radius:8px;background:#fff;color:#152235;resize:vertical}
 .welcome-card input,.welcome-card textarea{min-width:0}
+
+/* Shared PLAN.FLO branding for independent account and email handoff screens. */
+.auth-screen{align-items:start;padding-top:clamp(28px,6vh,72px);padding-bottom:48px}
+.auth-card{max-width:520px;padding:36px}
+.auth-card .welcome-intro{margin:32px 0 24px}
+.auth-card .welcome-intro h1{font-size:32px;line-height:1.16}
+.auth-card .welcome-intro p{font-size:15px;margin:12px 0 0}
+.auth-form fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:16px}
+.auth-card form label{margin:0;gap:8px;font-size:14px;font-weight:600;line-height:1.45}
+.auth-card form input,.auth-card form textarea{font-size:16px;min-height:46px;border-color:#ccd3df;border-radius:10px;padding:12px 14px;transition:border-color .15s,box-shadow .15s}
+.auth-card form input:focus-visible,.auth-card form textarea:focus-visible{outline:2px solid #2563ff;outline-offset:2px}
+.auth-card form small,.auth-hint{font-size:12px;line-height:1.6;color:#52657d;font-weight:400;margin:0}
+.auth-name-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.auth-card .auth-primary{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:50px;margin-top:8px;padding:13px 18px;border:0;border-radius:12px;background:#2563ff;color:white;font-size:15px;font-weight:650;text-decoration:none;box-shadow:0 5px 14px #2563ff1f;cursor:pointer}
+.auth-card .auth-primary:hover{background:#1954e8}
+.auth-card .auth-primary:focus-visible,.auth-card button:focus-visible,.auth-card a:focus-visible{outline:2px solid #2563ff;outline-offset:3px}
+.auth-navigation{display:flex;justify-content:center;gap:12px 20px;flex-wrap:wrap;margin-top:24px}
+.auth-navigation button{background:none;border:0;padding:4px 0;color:#245ed1;font-size:13px;cursor:pointer}
+.auth-feedback{font-size:14px;line-height:1.6;padding:14px 16px;border-radius:10px;overflow-wrap:anywhere;margin:0 0 20px}
+.auth-error{background:#fff2f0;color:#9f261d;border:1px solid #f5cbc5}
+.auth-success{background:#edf5ff;color:#264873;border:1px solid #d5e3f7}
+.auth-card footer{margin-top:28px;padding-top:20px}
+.auth-mail-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:16px;background:#edf3ff;color:#2563ff;margin-top:34px}
+.auth-check .welcome-intro{margin-top:22px}
+.auth-next-steps{list-style:none;padding:0;margin:26px 0 28px;display:grid;gap:20px}
+.auth-next-steps li{display:flex;align-items:flex-start;gap:14px}
+.auth-next-steps li>span{display:grid;place-items:center;background:#edf3ff;color:#2563ff;border-radius:50%;width:28px;height:28px;font-size:13px;font-weight:700;flex-shrink:0}
+.auth-next-steps strong{font-size:14px}
+.auth-next-steps p{font-size:13px;line-height:1.6;color:#52657d;margin:4px 0 0}
+.auth-resend{margin:26px 0 16px;border-top:1px solid #e4e7ed;padding-top:22px}
+.auth-resend summary{cursor:pointer;color:#25354d;font-size:14px;font-weight:600}
+.auth-resend .auth-hint{margin:12px 0}
+.auth-card .auth-secondary{display:block;width:100%;min-height:44px;margin-top:12px;background:#eff3f9;border:1px solid #dce3ef;color:#25456e;border-radius:10px;font-size:14px}
+.auth-change-email{display:block;text-align:center;font-size:13px;color:#245ed1;text-decoration:none;margin-top:18px}
+@media(max-width:540px){.auth-screen{padding:20px 14px 36px}.auth-card{padding:26px 22px;border-radius:22px}.auth-card .welcome-brand strong{font-size:27px}.auth-card .welcome-brand p{font-size:11px}.auth-card .welcome-intro h1{font-size:29px}.auth-name-row{grid-template-columns:1fr}.auth-navigation{gap:10px 16px}}
+@media(prefers-reduced-motion:reduce){.auth-card form input,.auth-card form textarea{transition:none}}

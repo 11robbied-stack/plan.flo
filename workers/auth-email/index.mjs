@@ -1,3 +1,4 @@
+import {AUTH_LINK_TTL_SECONDS} from '../../shared/auth-policy.mjs';
 // This Worker is reachable ONLY through the AUTH_EMAIL service binding.
 // Its deployment must have no routes, workers.dev URL, or preview URLs.
 const MAX_BODY = 8192;
@@ -50,12 +51,21 @@ function validateMail(value, origin) {
   }
   return value;
 }
-function message(mail, from) {
+const escapeHtml = value => value.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Called only after link and configured-origin validation in the transport handler.
+export function buildAuthEmail(mail, from) {
   const verification = mail.purpose === 'verification';
+  const heading = verification ? 'Verify your email' : 'Reset your password';
+  const intro = verification ? 'Verify your email address before signing in to PLAN.FLO.' : 'Choose a new password to get back to your PLAN.FLO workspace.';
+  const button = verification ? 'Verify email' : 'Reset password';
+  const expiry = `This link expires in ${AUTH_LINK_TTL_SECONDS / 60} minutes. If it expires, request a new link in PLAN.FLO.`;
+  const url = escapeHtml(mail.url);
+  const logo = escapeHtml(new URL('/planflo-email-icon.png', mail.url).href);
   return {
     from: `PLAN.FLO <${from}>`, to: [mail.to],
     subject: verification ? 'Verify your PLAN.FLO email address' : 'Reset your PLAN.FLO password',
-    text: `${verification ? 'Confirm your email address to continue setting up PLAN.FLO.' : 'Use this link to choose a new PLAN.FLO password.'}\n\n${mail.url}\n\nIf you did not request this email, you can ignore it.\nThis link is time-limited. Request another link in PLAN.FLO if it expires.`,
+    text: `PLAN.FLO — Plan. Manage. Deliver.\n\n${heading}\n\n${intro}\n\n${button}:\n${mail.url}\n\n${expiry}\n\nIf you did not request this email, you can ignore it.`,
+    html: `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${heading} — PLAN.FLO</title></head><body style="margin:0;padding:0;background:#eef5fc;color:#172b4d;font-family:Arial,Helvetica,sans-serif"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eef5fc"><tr><td align="center" style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#ffffff;border:1px solid #dce6f1;border-radius:20px"><tr><td style="padding:32px 24px"><table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="padding-right:12px"><img src="${logo}" width="44" height="47" alt="" style="display:block;border:0"></td><td><div style="font-size:27px;line-height:32px;font-weight:800;letter-spacing:-1px">PLAN.<span style="color:#2871df">FLO</span></div><div style="font-size:12px;line-height:20px;color:#62748b">Plan. Manage. Deliver.</div></td></tr></table><h1 style="margin:32px 0 12px;font-size:28px;line-height:35px;letter-spacing:-0.6px">${heading}</h1><p style="margin:0 0 24px;font-size:16px;line-height:25px;color:#52657d">${intro}</p><table role="presentation" cellspacing="0" cellpadding="0"><tr><td bgcolor="#2871df" style="border-radius:10px"><a href="${url}" style="display:inline-block;padding:15px 26px;border:1px solid #2871df;border-radius:10px;color:#ffffff;text-decoration:none;font-size:16px;font-weight:bold">${button}</a></td></tr></table><p style="margin:24px 0 16px;font-size:14px;line-height:22px;color:#52657d">${expiry}</p><p style="margin:0;font-size:13px;line-height:21px;color:#62748b">Button not working? <a href="${url}" style="color:#2871df;text-decoration:underline">Open the secure link</a>.</p><p style="margin:28px 0 0;padding-top:20px;border-top:1px solid #e4ebf3;font-size:13px;line-height:21px;color:#62748b">If you did not request this email, you can ignore it.</p></td></tr></table><p style="margin:20px 0 0;font-size:12px;color:#62748b">PLAN.FLO · Your project workspace</p></td></tr></table></body></html>`,
   };
 }
 
@@ -104,7 +114,7 @@ export function createMailWorker({fetch: transport = (...args) => globalThis.fet
     let mail;
     try { mail = validateMail(await boundedJson(request.body), origin); } catch { return reply(400); }
     try {
-      const accepted = await sendResend(message(mail, env.AUTH_EMAIL_FROM), env.RESEND_API_KEY, {fetch: transport, sleep, timeoutMs});
+      const accepted = await sendResend(buildAuthEmail(mail, env.AUTH_EMAIL_FROM), env.RESEND_API_KEY, {fetch: transport, sleep, timeoutMs});
       return reply(accepted ? 204 : 503);
     } catch { return reply(503); }
   }};

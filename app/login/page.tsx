@@ -1,2 +1,2 @@
 import AuthForm from './auth-form';
-export default async function Login({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){const p=await searchParams;return <AuthForm returnTo={p.return_to} token={p.token}/>}
+export default async function Login({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){const p=await searchParams;const linkError=!!p.error;return <AuthForm returnTo={p.return_to} token={linkError?'':p.token} initialMode={linkError?(p.flow==='recovery'?'recovery':'verify'):p.mode} linkError={linkError} verificationNotice={!linkError&&p.notice==='verification'}/>}
