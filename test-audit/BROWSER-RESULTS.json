@@ -1,6 +1,6 @@
 {
   "date": "2026-10-03",
-  "environment": "Headless installed Chrome, local Miniflare/workerd, disposable D1/R2, synthetic email captured in memory; external HTTP blocked",
+  "environment": "Installed Chrome: headless and headed; local Miniflare/workerd with disposable D1/R2, synthetic in-memory mail and blocked external HTTP",
   "results": [
     {
       "name": "isolated local Worker and migrations start",
@@ -43,7 +43,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "ad6f5bc1-043d-4654-84f4-4cf8a9f5bcf6"
+          "id": "11df7d61-91b2-4d12-abfa-b5f49b946e6f"
         }
       }
     },
@@ -58,7 +58,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "b002df25-c454-4377-ac0d-47d320fafb77"
+          "id": "76710f4c-bffc-4268-b8e3-1a56b00b25c4"
         }
       }
     },
@@ -73,7 +73,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "e96c6937-bfb8-4e6e-a6a6-362d99406f5f"
+          "id": "3ed5d78b-908b-48ce-9976-84a7b4bb979d"
         }
       }
     },
@@ -83,7 +83,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "2ebf791d-c526-4253-a822-00efa016a708"
+          "id": "2078e9ef-ff00-4c16-ba8a-10efdc275b2d"
         }
       }
     },
@@ -93,7 +93,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "c31cdde3-f087-4e56-b9e8-867981932c3c"
+          "id": "adcc6058-a217-4bd0-9116-e44fb542c656"
         }
       }
     },
@@ -103,7 +103,7 @@
       "detail": {
         "status": 200,
         "body": {
-          "id": "cc40dde9-0646-435e-8c3b-c603cf0a37ae"
+          "id": "3bd5f0b6-f8ca-47fe-a292-90a5511819c7"
         }
       }
     },
@@ -256,7 +256,47 @@
       "detail": {}
     },
     {
-      "name": "drawing preview iframe points to authenticated file route",
+      "name": "primary PDF preview paints nonwhite drawing pixels",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "multipage PDF navigation renders distinct page",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "PDF markup saves on visible page",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "page-one markup hidden on page two",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "page-one markup restored on return",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "original revision renders with revision-specific markups",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "explicit drawing download preserves original PDF bytes",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "malformed PDF displays visible recovery message",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "name": "valid page recovers after PDF preview error",
       "pass": true,
       "detail": {}
     },
@@ -289,8 +329,8 @@
     }
   ],
   "limitations": [
-    "Native embedded PDF plugin appears dark in headless screenshots, including a local diagnostic without CSP; visible native preview needs headed-browser acceptance.",
-    "No real email delivery, deployed staging, real Cloudflare bindings, payment or third-party integrations tested.",
-    "Core record saves use authenticated browser fetch calls; screen navigation, account lifecycle, project creation and invitation acceptance use UI controls."
+    "No real email delivery, deployed staging, payment or external provider integrations tested.",
+    "Core record saves use authenticated browser fetch calls; account lifecycle, project creation, invitations, page navigation, markups and download use UI controls.",
+    "Native PDF plugin root cause remains unconfirmed; primary preview now uses verified PDF.js canvas rendering instead."
   ]
 }

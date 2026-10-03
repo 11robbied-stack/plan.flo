@@ -215,3 +215,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 .welcome-card form button,.welcome-card>button{padding:10px 16px;border-radius:8px;background:#1769f4;color:#fff;cursor:pointer}
 .welcome-card button:disabled{opacity:.6;cursor:wait}
 .welcome-card form small{color:#526174}
+
+.drawing-pagination{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px;background:#fff;border-bottom:1px solid #dfe6ef;font-size:13px}
+.drawing-pdf-canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.drawing-preview-status{position:absolute;inset:16px 16px auto;padding:12px;background:#fff;color:#152235;border:1px solid #dfe6ef;border-radius:8px;z-index:2;pointer-events:none}
