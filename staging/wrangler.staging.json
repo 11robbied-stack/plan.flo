@@ -21,7 +21,10 @@
   "routes": [
     {
       "pattern": "staging.planflo.app",
-      "custom_domain": true
+      "custom_domain": true,
+      "zone_name": "planflo.app",
+      "enabled": true,
+      "previews_enabled": false
     }
   ],
   "assets": {
@@ -44,7 +47,8 @@
   "services": [
     {
       "binding": "AUTH_EMAIL",
-      "service": "planflo-staging-mail"
+      "service": "planflo-staging-mail",
+      "environment": "production"
     }
   ],
   "vars": {

@@ -5,7 +5,7 @@ The parent browser task verified `https://staging.planflo.app` serves login and 
 `staging/wrangler.staging.json` now declares exactly one Custom Domain:
 
 ```json
-{"pattern":"staging.planflo.app","custom_domain":true}
+{"pattern":"staging.planflo.app","custom_domain":true,"zone_name":"planflo.app","enabled":true,"previews_enabled":false}
 ```
 
 The app origin is `https://staging.planflo.app`. `workers_dev` and preview URLs remain disabled. D1 UUID, private R2 and private `AUTH_EMAIL` binding are unchanged. The mail config records the same origin and the user-selected sender `no-reply@notifications.planflo.app`; its routes remain empty and logging disabled. Its compatibility date matches the dashboard's 2026-10-03, already tested using the exact bundle and an isolated workerd 1.20261003.1 runtime.
@@ -38,3 +38,13 @@ Implementation evidence: `app/chatgpt-auth.ts` returns only verified Better Auth
 References:
 - [Cloudflare Custom Domain configuration](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/)
 - [Cloudflare secret preservation](https://developers.cloudflare.com/workers/configuration/secrets/)
+
+## Local reconciliation after the paused direct deployment
+
+The first direct deploy was canceled at the configuration-difference prompt, before upload. The temporary OAuth grant was logged out. No retry or new login was performed to prepare this reconciliation.
+
+The tracked config now explicitly retains every displayed remote route/service value: `zone_name: "planflo.app"`, `enabled: true`, `previews_enabled: false`, and `AUTH_EMAIL.environment: "production"`. Here `production` is Cloudflare's environment name within the existing **planflo-staging-mail** Worker, not a different PLAN.FLO production system. The exact D1 UUID and private R2 bucket remain unchanged. The staging check now enforces these values and the exact approved D1 UUID.
+
+Wrangler 4.92.0's runtime configuration validator accepts these fields, its remote-to-local converter emits this route shape, and its upload metadata preserves the service environment. Its shipped editor JSON schema is incomplete: it omits service `environment` and does not allow zone name alongside custom-domain flags in one schema alternative. Do not remove the explicit preservation values to silence that editor-only discrepancy. The actual `unstable_readConfig` normalized result was asserted against the complete route and service objects; the real deploy dry run passed without configuration warnings.
+
+Relative to the previously displayed remote diff, only adding the tested app's static assets and local D1 name/migration-directory metadata should remain. The latter are CLI metadata, not a migration operation. A fresh authorized remote comparison must still confirm there are no other changes; do not bypass a new conflict or the previous approval-review rejection. Any remaining confirmation should explicitly approve publishing the tested app/assets and email code while retaining the current domain, previews setting, mail target, database, file bucket and secrets. No database migrations or customer-account writes are included.
