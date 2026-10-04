@@ -2,9 +2,12 @@ import {NextRequest} from 'next/server';
 import {buildDemoData,demoDrawingSvg} from '../app/demo/demo-data';
 import * as api from '../app/api/demo/route';
 import * as drawing from '../app/api/demo/drawing/route';
+import {getCompanyAccess} from '../app/company-access';
+import * as admin from '../app/api/admin/route';
 import {demoAccessDenial} from '../app/demo/demo-access';
 export async function demoChecks({sql,check,identity,req}:any){
  const test=(n:string,ok:boolean)=>check('private demo '+n,ok,{}),request=(path='/api/demo')=>req(path);
+ const config=(globalThis as any).__testEnv;config.PLANFLO_DEMO_OWNER_ID='rob';config.PLANFLO_DEMO_OWNER_EMAIL='rob@example.test';
  const businessTables=['projects','records','files','settings','company_members','project_members','builders','gmail_connections','xero_connections','schedule_entries','payroll_config','dashboard_layouts'];
  const snapshot=()=>JSON.stringify(businessTables.map(t=>[t,sql.prepare('SELECT * FROM '+t).all()]));const before=snapshot();
  for(const who of [null,'a','aa','ae','b','support']){identity(who);const status=who?403:401;test((who||'anonymous')+' denied data',(await api.GET(request())).status===status);test((who||'anonymous')+' denied drawing',(await drawing.GET(request('/api/demo/drawing'))).status===status);test((who||'anonymous')+' denied page guard',(await demoAccessDenial())?.status===status);test((who||'anonymous')+' denied writes',(await api.POST()).status===status);}
@@ -12,8 +15,14 @@ export async function demoChecks({sql,check,identity,req}:any){
  const pic=await drawing.GET(request('/api/demo/drawing'));test('owner reads generated labelled drawing',pic.status===200&&(await pic.text()).includes('NOT FOR CONSTRUCTION'));test('drawing cache and content isolation',pic.headers.get('cache-control')==='private, no-store'&&pic.headers.get('content-security-policy')?.includes('sandbox')===true);
  for(const route of [api,drawing]){for(const method of ['POST','PUT','PATCH','DELETE'] as const)test('owner '+method+' cannot mutate',(await route[method]()).status===405);}
  for(const suffix of ['?owner=a','?projectId=a1','?userId=rob','?fileId=real-file']){test('rejects forged selector '+suffix,(await api.GET(request('/api/demo'+suffix))).status===400);test('drawing rejects forged selector '+suffix,(await drawing.GET(request('/api/demo/drawing'+suffix))).status===400);}
- const env=(globalThis as any).__testEnv,savedOwner=env.PLANFLO_PLATFORM_OWNER_ID,savedEmail=env.PLANFLO_PLATFORM_OWNER_EMAIL;
- env.PLANFLO_PLATFORM_OWNER_ID='different-owner';test('matching email alone insufficient',(await api.GET(request())).status===403);env.PLANFLO_PLATFORM_OWNER_ID=savedOwner;env.PLANFLO_PLATFORM_OWNER_EMAIL='different@example.test';test('matching subject alone insufficient',(await api.GET(request())).status===403);delete env.PLANFLO_PLATFORM_OWNER_ID;test('missing owner config fails closed',(await api.GET(request())).status===403);env.PLANFLO_PLATFORM_OWNER_ID=savedOwner;env.PLANFLO_PLATFORM_OWNER_EMAIL=savedEmail;
+ const env=(globalThis as any).__testEnv,savedOwner=env.PLANFLO_DEMO_OWNER_ID,savedEmail=env.PLANFLO_DEMO_OWNER_EMAIL;
+ env.PLANFLO_DEMO_OWNER_ID='different-owner';test('matching email alone insufficient',(await api.GET(request())).status===403);env.PLANFLO_DEMO_OWNER_ID=savedOwner;env.PLANFLO_DEMO_OWNER_EMAIL='different@example.test';test('matching subject alone insufficient',(await api.GET(request())).status===403);delete env.PLANFLO_DEMO_OWNER_ID;test('missing owner config fails closed',(await api.GET(request())).status===403);env.PLANFLO_DEMO_OWNER_ID=savedOwner;env.PLANFLO_DEMO_OWNER_EMAIL=savedEmail;
+ delete env.PLANFLO_DEMO_OWNER_EMAIL;test('missing demo email fails closed',(await api.GET(request())).status===403);env.PLANFLO_DEMO_OWNER_EMAIL=savedEmail;
+ for(const id of ['rob,another','rob another']){env.PLANFLO_DEMO_OWNER_ID=id;test('multiple demo subjects rejected '+id,(await api.GET(request())).status===403);}env.PLANFLO_DEMO_OWNER_ID=savedOwner;
+ const platformId=env.PLANFLO_PLATFORM_OWNER_ID;env.PLANFLO_PLATFORM_OWNER_ID='different-platform-owner';
+ test('demo-only owner cannot access platform admin',(await admin.GET(req('/api/admin'))).status===403);
+ const access=await getCompanyAccess({userId:'rob',email:'rob@example.test',displayName:'Demo',fullName:null},false);test('demo navigation independent of admin',access.demoAccess===true&&access.platformAdmin===false);
+ env.PLANFLO_PLATFORM_OWNER_ID=platformId;delete env.PLANFLO_DEMO_OWNER_ID;test('platform admin has no implicit demo access',(await api.GET(request())).status===403);env.PLANFLO_DEMO_OWNER_ID=savedOwner;
  const user=sql.prepare("SELECT status,owner FROM platform_users WHERE id='rob'").get();const account=sql.prepare('SELECT status FROM platform_accounts WHERE owner=?').get(user.owner);
  sql.prepare("UPDATE platform_users SET status='Disabled' WHERE id='rob'").run();test('disabled owner denied',(await api.GET(request())).status===403&&(await drawing.GET(request('/api/demo/drawing'))).status===403);sql.prepare("UPDATE platform_users SET status=? WHERE id='rob'").run(user.status);
  sql.prepare("UPDATE platform_accounts SET status='Suspended' WHERE owner=?").run(user.owner);test('disabled owner company denied',(await demoAccessDenial())?.status===403);sql.prepare('UPDATE platform_accounts SET status=? WHERE owner=?').run(account.status,user.owner);

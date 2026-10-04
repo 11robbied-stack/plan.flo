@@ -15,7 +15,7 @@ if(c.r2_buckets?.find(x=>x.binding==='FILES')?.bucket_name!=='planflo-staging-fi
 const mail=JSON.parse(readFileSync(new URL('../workers/auth-email/wrangler.staging.jsonc',import.meta.url),'utf8').replace(/^\s*\/\/.*$/gm,''));
 if(mail.name!=='planflo-staging-mail'||mail.workers_dev!==false||mail.preview_urls!==false||(mail.routes||[]).length)fail('Email Worker must have no public ingress.');
 if(mail.vars?.PLANFLO_AUTH_ORIGIN!==c.vars.PLANFLO_AUTH_ORIGIN||mail.vars?.AUTH_EMAIL_PROVIDER!=='resend'||!/^no-reply@notifications\.planflo\.app$/.test(mail.vars?.AUTH_EMAIL_FROM||''))fail('Verified sender and matching email/application origin must be configured.');
-for(const config of [c,mail])for(const key of ['RESEND_API_KEY','BETTER_AUTH_SECRET','PLANFLO_PLATFORM_OWNER_ID','PLANFLO_PLATFORM_OWNER_EMAIL']){
+for(const config of [c,mail])for(const key of ['RESEND_API_KEY','BETTER_AUTH_SECRET','PLANFLO_PLATFORM_OWNER_ID','PLANFLO_PLATFORM_OWNER_EMAIL','PLANFLO_DEMO_OWNER_ID','PLANFLO_DEMO_OWNER_EMAIL']){
  if(Object.hasOwn(config.vars||{},key))fail('Secrets and privileged identity pins must not be supplied as configuration variables, including empty values.');
 }
 

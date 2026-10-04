@@ -1,4 +1,5 @@
 import {managedSitesAuth} from './auth-runtime';
+import {activeDemoOwner} from './demo-owner';
 import {operatorRole} from './operator-access';
 import {observeIdentity} from './platform-store';
 import {normaliseAppSettings,disabledTabs} from './app-settings-model';
@@ -15,7 +16,7 @@ export async function getCompanyAccess(user:ChatGPTUser,observe=true):Promise<Ac
  const platform=observe?await observeIdentity(user,owner):{blocked:state?.a!=='Active'||state?.u!=='Active'};
  const [config,legacy]=await Promise.all([companyDb().prepare('SELECT data FROM app_settings WHERE owner=?').bind(owner).first<any>(),companyDb().prepare('SELECT colour,theme FROM settings WHERE owner=?').bind(owner).first<any>()]);
  const projectIds=membership?(await companyDb().prepare("SELECT pm.project_id FROM project_members pm JOIN company_members m ON m.id=pm.member_id AND m.owner=pm.owner JOIN projects p ON p.id=pm.project_id AND p.owner=pm.owner WHERE m.user_id=? AND m.status='active' AND pm.owner=?").bind(user.userId,owner).all<{project_id:string}>()).results.map(p=>p.project_id):[];
- const appSettings=normaliseAppSettings(config?.data,legacy||{}),features={projectIds,appSettings,disabledTabs:disabledTabs(appSettings),platformAdmin:!!await operatorRole(user)};
+ const appSettings=normaliseAppSettings(config?.data,legacy||{}),features={projectIds,appSettings,disabledTabs:disabledTabs(appSettings),platformAdmin:!!await operatorRole(user),demoAccess:await activeDemoOwner(user).catch(()=>false)};
  if(!membership)return {owner:user.userId,role:'owner',permissions:{},blocked:platform.blocked||needsOnboarding,...features};
  const permissions=normalisePermissions(JSON.parse(membership.permissions));
  if(membership.seat_type==='field')for(const tab of Object.keys(permissions))if(!fieldUserTabs.includes(tab))permissions[tab]={view:false,edit:false};
