@@ -1,3 +1,4 @@
+import {checkNavigationStates,checkTimeHeader,checkDashboardAccents} from '../scripts/navigation-browser-checks.mjs';
 import {checkIntegrationSetup} from '../scripts/integration-browser-checks.mjs';
 import {checkDrawingTools} from '../scripts/drawing-browser-checks.mjs';
 import {createRequire} from 'node:module';
@@ -110,10 +111,14 @@ try{
  await poDialog.getByLabel('Supplier',{exact:true}).fill('Synthetic supplier');await poDialog.getByLabel('Description',{exact:true}).fill('Synthetic cable');await poDialog.getByLabel('Unit price ($)',{exact:true}).fill('12.50');await poDialog.getByRole('button',{name:'Save',exact:true}).click();await poDialog.waitFor({state:'hidden'});
  check('PO appears in project register',await page.getByText('PO-BROWSER-001',{exact:true}).count()>0);await page.screenshot({path:'test-audit/browser-artifacts/v58-purchase-order.png',fullPage:true});
  await page.getByRole('button',{name:'Costs',exact:true}).click();await page.getByText('Supplier invoice review',{exact:false}).first().waitFor();check('Costs renders supplier invoice review',true);
+ await checkNavigationStates(page,check);
  await page.getByRole('button',{name:'Schedule',exact:true}).first().click();await page.waitForTimeout(400);check('workspace schedule screen renders',(await page.locator('body').innerText()).includes('Schedule'));
  await page.getByRole('button',{name:'Time Sheets',exact:true}).first().click();await page.waitForTimeout(400);check('workspace timesheets screen renders',(await page.locator('body').innerText()).includes('Time Sheets'));
+
+ await checkTimeHeader(page,check);
  await checkIntegrationSetup(page,check,origin);
  await page.setViewportSize({width:1440,height:1000});await page.goto(origin+'/');await page.getByRole('button',{name:'PLAN.FLO dashboard',exact:true}).click();await page.locator('.pf-insights').waitFor();
+ await checkDashboardAccents(page,check);
  check('Clear Overview dashboard uses real project insights',await page.locator('.pf-insights').innerText().then(t=>t.includes('Contract portfolio')&&t.includes('Project activity')));
  check('Clear Overview navigation is a white surface',await page.locator('.sidebar').evaluate(el=>getComputedStyle(el).backgroundColor==='rgb(255, 255, 255)'));
  await page.screenshot({path:'test-audit/browser-artifacts/clear-overview-desktop.png',fullPage:true});

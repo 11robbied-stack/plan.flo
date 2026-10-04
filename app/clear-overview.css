@@ -28,3 +28,24 @@ select:not([multiple]):not([size]){appearance:none;-webkit-appearance:none;backg
 .app [data-slot="tabs-list"]{border-radius:999px!important}.app [data-slot="tabs-trigger"],.app .company-settings-tabs [data-slot="tabs-trigger"]{border-radius:999px!important}.app [data-slot="tabs-trigger"][data-state="active"]{color:var(--foreground)!important}
 .app .planflo-wordmark strong{color:var(--foreground)}.app .planflo-wordmark small,.app .navigation-group-title{color:var(--muted-foreground)}.app .profit-live-card{background:var(--card);color:var(--foreground)}
 .app .profit-live-heading p,.app .profit-refresh>span,.app .profit-ring small,.app .profit-live-values small,.app .profit-live-note{color:var(--muted-foreground)}.app .profit-live-total strong{color:#08704b}.app .profit-live-card .profit-loss{color:#c23639}.app.dark .profit-live-total strong{color:#76e7b8}.app.dark .profit-live-card .profit-loss{color:#ff9690}.app .profit-live-note{border-color:var(--border)}.app .profit-refresh button{background:var(--background);color:var(--foreground);border-color:var(--border)}
+
+/* Separate the time-view switch from the title and record actions. */
+.time-register-heading{align-items:flex-start;gap:24px;margin-bottom:28px}
+.time-register-heading>div:first-child{display:block;min-width:0;flex:1}
+.time-register-heading>div:first-child p{max-width:620px;line-height:1.6}
+.time-register-actions{display:flex;flex-direction:column;align-items:flex-end;gap:16px;flex-shrink:0}
+.time-register-actions .member-actions{margin:0;justify-content:flex-end}
+.time-view-switch{max-width:100%}
+@media(max-width:1100px){.time-register-heading{flex-direction:column;align-items:stretch}.time-register-actions{align-items:flex-start;gap:16px}.time-register-actions .member-actions{justify-content:flex-start}.time-register-heading>div:first-child p{max-width:none}}
+@media(max-width:520px){.time-register-actions{width:100%;min-width:0}.time-view-switch [data-slot="tabs-list"]{width:100%;border-radius:20px!important}.time-view-switch [data-slot="tabs-trigger"]{white-space:normal;flex:1;min-width:0}.time-view-switch{width:100%}}
+
+/* Pay.com-inspired title accents; labels carry meaning independently of colour. */
+:root{--tile-blue:#0752fa;--tile-green:#35cea0;--tile-orange:#f39b12;--tile-red:#e14b43;--tile-neutral:#8993a3}
+.app.dark{--tile-blue:#7ba2ff;--tile-green:#53ddb0;--tile-orange:#ffbc56;--tile-red:#ff8a82;--tile-neutral:#a0a7b4}
+.app .dashboard-status-ribbon .stat>span,.pf-insight h2,.tile-heading{display:flex;align-items:center;gap:12px}
+.app .dashboard-status-ribbon .stat>span:before,.pf-insight h2:before,.tile-heading:before{content:'';display:block;flex:0 0 4px;width:4px;height:18px;border-radius:999px;margin:0;background:var(--tile-neutral)}
+.app .dashboard-status-ribbon .stat.active>span:before{background:var(--tile-green)}
+.app .dashboard-status-ribbon .stat.on-hold>span:before,.tile-heading-warning:before{background:var(--tile-orange)}
+.app .dashboard-status-ribbon .stat.closed>span:before,.pf-insight:first-child h2:before{background:var(--tile-blue)}
+.pf-insight:last-child h2:before{background:var(--tile-green)}
+.tile-heading-danger:before{background:var(--tile-red)}

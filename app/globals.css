@@ -185,7 +185,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 .sidebar .side-item{transition:background-color .16s,color .16s,box-shadow .16s}
 .sidebar .side-item.active{background:#f5f7fb!important;color:#17283d!important;box-shadow:0 2px 8px #00000016!important;border-radius:14px}
 .sidebar .side-item.active svg{color:var(--brand,#2563ff)}
-.sidebar .side-item:not(.active):hover{background:#ffffff0c;color:#fff}
+.sidebar .side-item:not(.active):hover{background:var(--muted);color:var(--foreground)}
 .sidebar .side-item:focus-visible{outline:2px solid #a7cbff;outline-offset:3px}
 .drawing-tools{background:var(--segment-track);border:1px solid var(--segment-edge);padding:4px;border-radius:14px;flex-wrap:wrap}
 .drawing-tools button{border:1px solid transparent;border-radius:10px;background:transparent;color:var(--segment-text);padding:7px 10px;transition:background-color .16s,box-shadow .16s}
