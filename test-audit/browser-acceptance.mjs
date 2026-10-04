@@ -1,3 +1,4 @@
+import {checkStageProgress} from '../scripts/stage-progress-browser-checks.mjs';
 import {checkDashboardEditor} from '../scripts/dashboard-editor-browser-checks.mjs';
 import {checkNavigationStates,checkTimeHeader,checkDashboardAccents} from '../scripts/navigation-browser-checks.mjs';
 import {checkIntegrationSetup} from '../scripts/integration-browser-checks.mjs';
@@ -74,8 +75,9 @@ try{
  await page.getByRole('button',{name:'Forgot password?',exact:true}).click();await page.locator('input[name=email]').fill('browser-a@example.test');await page.getByRole('button',{name:'Reset your password',exact:true}).click();await page.getByRole('heading',{name:'Check your email',exact:true}).waitFor();const recovery=mail.findLast(m=>m.to==='browser-a@example.test'&&m.purpose==='recovery');check('browser recovery captures test email',!!recovery);
  await page.goto(recovery.url);await page.locator('input[name=password]').fill('Replacement Password 43!');await page.getByRole('button',{name:'Choose a new password',exact:true}).click();await page.getByText('Password updated. You can now sign in.',{exact:true}).waitFor();await page.locator('input[name=email]').fill('browser-a@example.test');await page.locator('input[name=password]').fill('Replacement Password 43!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForURL(origin+'/');check('browser recovery and new password login complete',true);
  await page.waitForLoadState('networkidle');await page.getByRole('button',{name:'Projects',exact:true}).first().click();await page.getByText('Browser Project A1',{exact:true}).first().click();
+ await checkStageProgress(page,check,api,projectA.id);
  for(const section of ['Tasks','Time','RFIs','Variations','Drawings']){
-  await page.getByRole('navigation',{name:'Project navigation'}).getByRole('button',{name:new RegExp('^'+section+'(?:[0-9]+)?$')}).click();await page.waitForTimeout(400);check(section+' project screen renders',!(await page.locator('body').innerText()).includes('Application error'));
+  await page.getByRole('navigation',{name:'Project navigation'}).getByRole('button',{name:new RegExp('^'+section+'(?:\\s*[0-9]+)?$')}).click();await page.waitForTimeout(400);check(section+' project screen renders',!(await page.locator('body').innerText()).includes('Application error'));
  }
  await page.locator('.drawing-pdf-canvas[data-render-status=ready]').waitFor();
  const firstPreview=await page.locator('.drawing-pdf-canvas').evaluate(c=>c.toDataURL());
@@ -134,7 +136,7 @@ try{
  check('mobile check-email has no horizontal overflow',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.getByRole('link',{name:'Use a different email',exact:true}).click();await page.getByRole('heading',{name:'Create your account',exact:true}).waitFor();
  check('change email returns to empty signup and clears pending address',await page.locator('input[name=email]').inputValue()===''&&await page.evaluate(()=>sessionStorage.getItem('planflo-pending-email')===null));
- await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.screenshot({path:'test-audit/browser-artifacts/mobile-login.png',fullPage:true});
+ await page.waitForLoadState('networkidle');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('heading',{name:'Welcome back.',exact:true}).waitFor();await page.waitForFunction(()=>{const image=document.querySelector('.welcome-brand img');return image?.complete&&image.naturalWidth>0;});await page.screenshot({path:'test-audit/browser-artifacts/mobile-login.png',fullPage:true});
  check('mobile login shows existing brand with no overflow',await page.locator('.welcome-brand img').evaluate(i=>i.complete&&i.naturalWidth>0)&&await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  const uiContext=await browser.newContext({viewport:{width:390,height:844},extraHTTPHeaders:{'cf-connecting-ip':'192.0.2.150'}});
  await uiContext.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());const ui=await uiContext.newPage();await ui.clock.install();ui.on('pageerror',e=>errors.push(String(e)));
