@@ -1,0 +1,30 @@
+export async function checkDrawingTools(page,check,api,projectId){
+ const button=name=>page.getByRole('button',{name,exact:true});
+ const sheetPoint=async(x,y)=>page.locator('.drawing-transformed-surface').evaluate((el,{x,y})=>{const b=el.getBoundingClientRect(),s=Math.min(b.width/1400,b.height/1000);return {x:b.left+(b.width-1400*s)/2+x*s,y:b.top+(b.height-1000*s)/2+y*s}},{x,y});
+ const clickPoint=async(x,y)=>{await page.locator('.drawing-pdf-canvas[data-render-status=ready]').waitFor();await page.locator('.drawing-viewport').scrollIntoViewIfNeeded();const p=await sheetPoint(x,y);await page.mouse.click(p.x,p.y)};
+ check('measure requires a page calibration',await button('Measure').isDisabled());
+ await button('Set scale').click();await clickPoint(400,400);await clickPoint(800,400);
+ await page.getByLabel('Known distance',{exact:true}).fill('0');check('scale rejects zero known distance',await button('Save scale').isDisabled());
+ await page.getByLabel('Known distance',{exact:true}).fill('10');await button('Save scale').click();await page.getByRole('dialog').waitFor({state:'hidden'});
+ await button('Measure').click();await clickPoint(400,500);await clickPoint(600,500);
+ await page.locator('[data-measurement] text').filter({hasText:'5.00 m'}).waitFor();check('calibrated half-reference measures five metres',true);
+ const first=(await api(page,'/api/data?project='+projectId)).body.records.filter(r=>r.kind==='markup').map(r=>JSON.parse(r.data)).find(r=>r.tool==='Measure');check('measurement stores page revision calibration and length',first?.page===1&&!!first.revisionId&&!!first.calibrationId&&Math.abs(first.metres-5)<.02);
+ await button('Zoom in').click();await button('Zoom in').click();await button('Pan').click();
+ const viewport=await page.locator('.drawing-viewport').boundingBox();await page.mouse.move(viewport.x+viewport.width/2,viewport.y+viewport.height/2);await page.mouse.down();await page.mouse.move(viewport.x+viewport.width/2+40,viewport.y+viewport.height/2+30);await page.mouse.up();
+ check('hand tool pans the zoomed drawing',await page.locator('.drawing-transformed-surface').evaluate(el=>el.style.transform.includes('translate(40px, 30px)')));
+ await button('Measure').click();await clickPoint(400,550);await clickPoint(600,550);
+ await page.waitForFunction(()=>document.querySelectorAll('[data-measurement]').length===2);check('measurement remains accurate after zoom and pan',(await page.locator('[data-measurement] text').allTextContents()).every(s=>s==='5.00 m'));
+ await button('Measurement settings').click();await page.getByLabel('Display units',{exact:true}).selectOption('mm');await page.getByLabel('Decimal places',{exact:true}).selectOption('0');check('measurement units and precision update labels',(await page.locator('[data-measurement] text').allTextContents()).every(s=>s==='5000 mm'));
+ await button('Fit').click();await page.getByLabel('Measurement direction',{exact:true}).selectOption('Vertical');
+ await clickPoint(650,400);await clickPoint(850,600);await page.waitForFunction(()=>document.querySelectorAll('[data-measurement]').length===3);
+ check('vertical measurement constrains endpoints',await page.locator('[data-measurement] line').evaluateAll(lines=>lines.some(el=>el.getAttribute('x1')===el.getAttribute('x2')&&Math.abs(Number(el.getAttribute('y2'))-Number(el.getAttribute('y1'))-200)<1)));
+ await clickPoint(500,500);await page.keyboard.press('Escape');check('Escape cancels unfinished measurement',await page.getByRole('button',{name:'Cancel line',exact:true}).count()===0&&await page.locator('[data-measurement]').count()===3);
+ await page.setViewportSize({width:760,height:1000});await button('Fit').click();await page.getByLabel('Measurement direction',{exact:true}).selectOption('Free');await clickPoint(400,650);await clickPoint(600,650);await page.waitForFunction(()=>document.querySelectorAll('[data-measurement]').length===4);check('measurement survives responsive resize',(await page.locator('[data-measurement] text').allTextContents()).every(s=>s==='5000 mm'));
+ await page.screenshot({path:'test-audit/browser-artifacts/drawing-tools-mobile.png',fullPage:true});await page.setViewportSize({width:1280,height:900});
+ await button('Set scale').click();await clickPoint(400,400);await clickPoint(800,400);await page.getByLabel('Known distance',{exact:true}).fill('20');await page.getByLabel('Reference units',{exact:true}).selectOption('m');await button('Save scale').click();await page.getByRole('dialog').waitFor({state:'hidden'});
+ check('recalibration preserves previously saved lengths',(await page.locator('[data-measurement] text').allTextContents()).every(s=>s==='5000 mm'));
+ await button('Next page').click();await page.locator('.drawing-pdf-canvas[data-render-status=ready]').waitFor();check('page two has no scale or measurements',await button('Measure').isDisabled()&&await page.locator('[data-measurement]').count()===0);
+ await button('Previous page').click();await page.locator('[data-measurement]').first().waitFor();check('page one restores saved scale and measurements',await button('Measure').isEnabled()&&await page.locator('[data-measurement]').count()===4);
+ await button('Erase').click();await page.locator('[data-measurement] text').first().click();await page.waitForFunction(()=>document.querySelectorAll('[data-measurement]').length===3);check('erase removes a saved measurement',true);
+ await button('Pan').click();await page.screenshot({path:'test-audit/browser-artifacts/drawing-tools-desktop.png',fullPage:true});
+}

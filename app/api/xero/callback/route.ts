@@ -1,0 +1,5 @@
+import {NextRequest,NextResponse} from 'next/server';
+import {getChatGPTUser} from '@/app/chatgpt-auth';
+import {getCompanyAccess} from '@/app/company-access';
+import {completeXero,cancelXero} from '@/app/xero-service';
+export async function GET(req:NextRequest){const user=await getChatGPTUser();if(!user)return new Response('Sign in to PLAN.FLO and reconnect Xero from Settings > Integrations.',{status:401});const access=await getCompanyAccess(user);if(access.blocked||access.role==='member'||access.disabledTabs?.includes('Time'))return new Response('Administrator access required.',{status:403});let result='failed';try{const code=req.nextUrl.searchParams.get('code'),state=req.nextUrl.searchParams.get('state');if(req.nextUrl.searchParams.has('error')){if(state)await cancelXero(access.owner,user.userId,state);result='cancelled';}else if(code&&state){await completeXero(access.owner,user.userId,state,code,req.nextUrl.origin);result='authorised'}}catch{}const res=NextResponse.redirect(new URL('/?xero='+result,req.url));res.headers.set('Cache-Control','no-store');res.headers.set('Referrer-Policy','no-referrer');return res}

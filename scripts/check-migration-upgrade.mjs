@@ -18,4 +18,11 @@ for(const {table,columns,rows} of before)assert.deepEqual(db.prepare(`SELECT ${c
 assert.equal(db.prepare("SELECT purchase_order_number FROM projects WHERE id='project'").get().purchase_order_number,'');
 assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(),[]);
 console.log('0026 → 0027 preserves every existing table/column value, including credentials, sessions, memberships, assignments and files; foreign keys valid.');
+// Preserve the already-integrated invoice/auth data when adding connection storage.
+db.exec("INSERT INTO gmail_connections(owner,email,refresh_token,updated) VALUES('auth:fixture','fixture@example.test','synthetic-encrypted-token','fixture')");
+const integrated=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all().map(r=>({name:r.name,rows:db.prepare(`SELECT * FROM "${r.name}"`).all()}));
+for(const f of readdirSync('drizzle').filter(f=>f.endsWith('.sql')&&Number(f.slice(0,4))>27).sort())db.exec(readFileSync('drizzle/'+f,'utf8'));
+for(const {name,rows} of integrated)assert.deepEqual(db.prepare(`SELECT * FROM "${name}"`).all(),rows,name+' integrated data changed');
+assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(),[]);
+console.log('0027 → latest preserves existing integrated data and Gmail connections.');
 db.close();

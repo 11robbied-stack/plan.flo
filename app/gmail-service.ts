@@ -1,10 +1,11 @@
 import {env} from 'cloudflare:workers';
+import {integrationConfig,integrationSetup} from './integration-config';
 import {companyDb,hashInvite} from './company-access';
 import {decodeGmail,messageParts,messageText,matchInvoice,invoiceFields,type Reference} from './invoice-matching';
 import {extractText,getDocumentProxy} from 'unpdf';
 const scope='https://www.googleapis.com/auth/gmail.readonly';
-export function gmailConfig(){const e=env as any;return {clientId:String(e.GMAIL_CLIENT_ID||''),clientSecret:String(e.GMAIL_CLIENT_SECRET||''),redirectUri:String(e.GMAIL_REDIRECT_URI||''),encryptionKey:String(e.GMAIL_TOKEN_ENCRYPTION_KEY||'')};}
-export function gmailReady(){const c=gmailConfig();return !!(c.clientId&&c.clientSecret&&/^https:\/\//.test(c.redirectUri)&&c.encryptionKey);}
+export function gmailConfig(){return integrationConfig('gmail')}
+export function gmailReady(){return integrationSetup('gmail').ready}
 const b64=(b:Uint8Array)=>btoa(String.fromCharCode(...b));
 async function key(){const bytes=decodeGmail(gmailConfig().encryptionKey);if(bytes.length!==32)throw new Error('Gmail encryption setup is incomplete.');return crypto.subtle.importKey('raw',bytes,'AES-GCM',false,['encrypt','decrypt']);}
 export async function encryptToken(value:string,owner:string){const iv=crypto.getRandomValues(new Uint8Array(12));const bytes=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(owner)},await key(),new TextEncoder().encode(value));return b64(iv)+'.'+b64(new Uint8Array(bytes));}

@@ -34,7 +34,7 @@ Do not replace a failed gate with plain `pnpm build`, skip browser tests, enable
 
 ## Migration approval without database grants
 
-The initial approved tree above is the exact migration directory through 0027. That migration was applied to staging and independently read back at 2026-10-03 10:14:43 UTC before the v58 publication. This follow-up changes no migrations.
+The initial approved tree above is the exact migration directory through 0027. That migration was applied to staging and independently read back at 2026-10-03 10:14:43 UTC before the v58 publication. That historical approval does not cover the newer 0028 Xero migration. The latest candidate must remain blocked until 0028 is separately applied and read back, then its exact committed schema tree is approved. Turnstile runtime configuration must also be verified before publishing the signup changes.
 
 Any migration addition, deletion or edit (including journal/snapshot metadata) changes `HEAD:drizzle` and stops automatic deployment. Leave the approval variable unchanged until an authorized operator has separately reviewed the SQL, verified the correct database and recovery point, applied the approved migration and read back the ledger/schema. Then update only `PLANFLO_STAGING_SCHEMA_TREE` to the reviewed commit's `git rev-parse <commit>:drizzle` value and retry that exact candidate's build. A missing variable fails closed. Never automatically derive and approve the variable from the build being deployed.
 

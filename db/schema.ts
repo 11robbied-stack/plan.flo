@@ -71,3 +71,10 @@ export const gmailOauthStates=sqliteTable('gmail_oauth_states',{
 export const supplierInvoices=sqliteTable('supplier_invoices',{
  id:text('id').primaryKey(),owner:text('owner').notNull(),sourceKey:text('source_key').notNull(),mailbox:text('mailbox').notNull(),messageId:text('message_id').notNull(),projectId:text('project_id').notNull().default(''),status:text('status').notNull().default('Needs review'),matchReason:text('match_reason').notNull().default(''),data:text('data').notNull(),fileId:text('file_id').notNull().default(''),version:integer('version').notNull().default(1),created:text('created').notNull(),reviewedBy:text('reviewed_by').notNull().default(''),reviewedAt:text('reviewed_at').notNull().default('')
 },t=>[uniqueIndex('idx_supplier_invoice_source').on(t.owner,t.sourceKey),index('idx_supplier_invoice_project').on(t.owner,t.projectId,t.status)]);
+
+export const xeroConnections=sqliteTable('xero_connections',{
+ owner:text('owner').primaryKey(),tokens:text('tokens').notNull().default(''),tenantId:text('tenant_id'),tenantName:text('tenant_name').notNull().default(''),connectionId:text('connection_id').notNull().default(''),choices:text('choices').notNull().default('[]'),catalog:text('catalog').notNull().default('{}'),mapping:text('mapping').notNull().default('{}'),attemptId:text('attempt_id').notNull().default(''),version:integer('version').notNull().default(0),lockUntil:integer('lock_until').notNull().default(0),updated:text('updated').notNull().default('')
+},t=>[uniqueIndex('idx_xero_tenant').on(t.tenantId)]);
+export const xeroOauthStates=sqliteTable('xero_oauth_states',{
+ stateHash:text('state_hash').primaryKey(),owner:text('owner').notNull(),userId:text('user_id').notNull(),verifier:text('verifier').notNull(),expires:integer('expires').notNull()
+});

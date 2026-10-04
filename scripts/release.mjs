@@ -12,7 +12,7 @@ if(mode==='check') {
   run('scripts/check-migrations.mjs');run('scripts/check-migration-upgrade.mjs');run('scripts/check-staging.mjs');
   run('node_modules/typescript/bin/tsc',['-p','test-audit/tsconfig.app.json']);
   run('test-audit/build-harness.mjs');run('test-audit/run.mjs');
-  for(const file of ['check-invoice-workflow','check-purchase-order-number','check-pdf-exports'])run('scripts/'+file+'.mjs');
+  for(const file of ['check-invoice-workflow','check-purchase-order-number','check-pdf-exports','check-drawing-measurement'])run('scripts/'+file+'.mjs');
   execFileSync(process.execPath,['--test',...readdirSync('tests/auth-email').filter(f=>f.endsWith('.test.mjs')).map(f=>'tests/auth-email/'+f)],{stdio:'inherit'});
 } else if(mode==='prepare') {
   if(releaseInfo().dirty)throw new Error('Commit reviewed changes before preparing a release.');

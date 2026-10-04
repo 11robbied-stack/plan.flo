@@ -18,12 +18,19 @@ export function companyProfile(input:Record<string,unknown>,required=true){
  const abn=field(input.abn,'the ABN',30,required);
  if(abn&&!validAbn(abn))throw new RegistrationError('Enter an 11-digit ABN with a valid checksum.');
  const address=field(input.address,'the address',500,required);
- const phone=field(input.phone,'the phone number',40,true);
- if(!/^\+?[\d ()-]+$/.test(phone)||!/^\d{8,15}$/.test(phone.replace(/\D/g,'')))throw new RegistrationError('Enter a phone number containing 8 to 15 digits.');
+ const phone=field(input.phone,'the phone number',40,required);
+ if(phone&&(!/^\+?[\d ()-]+$/.test(phone)||!/^\d{8,15}$/.test(phone.replace(/\D/g,''))))throw new RegistrationError('Enter a phone number containing 8 to 15 digits.');
  const rec=field(input.rec,'the REC number',60,required);
  if(rec&&!/^[a-zA-Z0-9][a-zA-Z0-9 ./-]*$/.test(rec))throw new RegistrationError('Enter the REC number using letters, numbers, spaces, slashes or hyphens.');
  return {businessName,abn:abn.replace(/\s/g,''),address,phone,rec};
 }
 export function registrationProfile(input:Record<string,unknown>,requireBusiness=true):RegistrationProfile{
- return {firstName:field(input.firstName,'your name',80),surname:field(input.surname,'your surname',80),...companyProfile(input,requireBusiness)};
+ const fullName=typeof input.fullName==='string'?input.fullName.trim():'';
+ const firstName=field(fullName||input.firstName,'your name',160);
+ const surname=fullName?'':field(input.surname,'your surname',80,false);
+ const profile=companyProfile(input,false);
+ if(!profile.phone)throw new RegistrationError('Enter the phone number.');
+ if(requireBusiness&&!profile.businessName)throw new RegistrationError('Enter the organisation / company.');
+ if(requireBusiness&&!profile.rec)throw new RegistrationError('Enter the REC number.');
+ return {firstName,surname,...profile};
 }

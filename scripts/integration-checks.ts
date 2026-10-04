@@ -1,0 +1,51 @@
+import {NextRequest} from 'next/server';
+import * as api from '../app/api/xero/route';
+import * as callback from '../app/api/xero/callback/route';
+import {integrationSetup} from '../app/integration-config';
+import {openXero,sealXero} from '../app/xero-service';
+export async function integrationChecks({sql,check,identity}:any){
+ const env=(globalThis as any).__testEnv,fetchBefore=globalThis.fetch,headersBefore=(globalThis as any).__testHeaders;
+ const origin='https://planflo.example.test',tenant='11111111-1111-4111-8111-111111111111',connection='22222222-2222-4222-8222-222222222222',employee='33333333-3333-4333-8333-333333333333',rate='44444444-4444-4444-8444-444444444444',calendar='55555555-5555-4555-8555-555555555555';
+ const request=(path:string,body?:any,from=origin)=>new NextRequest(origin+path,{method:body?'POST':'GET',headers:{'content-type':'application/json',origin:from},...(body?{body:JSON.stringify(body)}:{})});
+ const get=async()=>{const r=await api.GET(request('/api/xero'));return {status:r.status,body:await r.json() as any}};
+ const post=async(body:any)=>{const r=await api.POST(request('/api/xero',body));return {status:r.status,body:await r.json() as any}};
+ const done=async(state:string)=>callback.GET(request('/api/xero/callback?state='+encodeURIComponent(state)+'&code=synthetic-code'));
+ let calls:string[]=[],refreshes=0;
+ try{
+ identity(null);check('Xero anonymous setup denied',(await get()).status===403,{});
+ identity('ae');check('Xero member connect denied',(await post({action:'connect'})).status===403,{});
+ identity('a');check('Xero setup exposes actionable missing checks',(await get()).body.setup.checks.some((c:any)=>!c.ready),{});
+ check('Xero unconfigured connect fails closed',(await post({action:'connect'})).status===400,{});
+ Object.assign(env,{XERO_CLIENT_ID:'synthetic-client',XERO_CLIENT_SECRET:'synthetic-secret',XERO_REDIRECT_URI:origin+'/api/xero/callback',XERO_TOKEN_ENCRYPTION_KEY:btoa('x'.repeat(32))});
+ check('Xero configured readiness',integrationSetup('xero',origin).ready,{});
+ check('Xero callback origin mismatch rejected',!integrationSetup('xero','https://other.example.test').ready,{});
+ const key=env.XERO_TOKEN_ENCRYPTION_KEY;env.XERO_TOKEN_ENCRYPTION_KEY='bad';check('Xero rejects malformed encryption key',!integrationSetup('xero',origin).ready,{});env.XERO_TOKEN_ENCRYPTION_KEY=key;
+ check('Xero cross-origin mutation denied',(await api.POST(request('/api/xero',{action:'connect'},'https://evil.example'))).status===403,{});
+ globalThis.fetch=async(input:any,init?:any)=>{const url=String(input);calls.push(url);if(url==='https://identity.xero.com/connect/token'){const body=new URLSearchParams(init.body);if(body.get('grant_type')==='refresh_token')refreshes++;return Response.json({access_token:'synthetic-access',refresh_token:'synthetic-refresh-'+refreshes,expires_in:1800,scope:'offline_access payroll.employees.read payroll.settings.read'})}if(url==='https://api.xero.com/connections')return Response.json([{id:connection,tenantId:tenant,tenantName:'Synthetic Company',tenantType:'ORGANISATION'}]);if(url==='https://api.xero.com/connections/'+connection&&init.method==='DELETE')return new Response(null,{status:204});if(init.headers['Xero-Tenant-Id']!==tenant)throw Error('Missing synthetic tenant header');if(url.endsWith('/Employees?page=1'))return Response.json({Employees:[{EmployeeID:employee,FirstName:'Synthetic',LastName:'Worker',TaxFileNumber:'must-not-be-stored'}]});if(url.endsWith('/PayItems'))return Response.json({PayItems:{EarningsRates:[{EarningsRateID:rate,Name:'Ordinary'}]}});if(url.endsWith('/PayrollCalendars'))return Response.json({PayrollCalendars:[{PayrollCalendarID:calendar,Name:'Weekly'}]});throw Error('Unexpected synthetic request');};
+ let begun=await post({action:'connect'}),url=new URL(begun.body.url),state=url.searchParams.get('state')!;
+ check('Xero consent uses PKCE and read-only payroll scopes',begun.status===200&&url.hostname==='login.xero.com'&&url.searchParams.get('code_challenge_method')==='S256'&&!url.searchParams.get('scope')?.split(' ').includes('payroll.timesheets'),{});
+ identity('b');check('Xero callback cannot cross companies',(await done(state)).headers.get('location')?.endsWith('xero=failed'),{});identity('aa');check('Xero callback bound to initiating user',(await done(state)).headers.get('location')?.endsWith('xero=failed'),{});identity('a');
+ check('Xero callback accepts original company user',(await done(state)).headers.get('location')?.endsWith('xero=authorised'),{});
+ check('Xero callback replay denied',(await done(state)).headers.get('location')?.endsWith('xero=failed'),{});
+ let status=await get();check('Xero requires explicit organisation selection',status.body.authorised&&!status.body.connected&&status.body.choices.length===1,{});
+ check('Xero tokens never returned to browser',!JSON.stringify(status.body).includes('synthetic-access')&&!JSON.stringify(status.body).includes('synthetic-secret')&&!JSON.stringify(status.body).includes('synthetic-refresh'),{});
+ const encrypted=sql.prepare('SELECT tokens FROM xero_connections WHERE owner=?').get('a').tokens;check('Xero tokens encrypted at rest',!encrypted.includes('synthetic')&&encrypted.includes('.'),{});
+ let crossed=false;try{await openXero(encrypted,'b')}catch{crossed=true}check('Xero token encryption bound to company',crossed,{});
+ check('Xero rejects forged organisation',(await post({action:'select',tenantId:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',version:status.body.version})).status===400,{});
+ check('Xero links authorised organisation',(await post({action:'select',tenantId:tenant,version:status.body.version})).status===200,{});
+ check('Xero stale update rejected',(await post({action:'select',tenantId:tenant,version:status.body.version})).status===400,{});
+ status=await get();check('Xero refreshes payroll matching catalog',(await post({action:'refresh',version:status.body.version})).status===200,{});status=await get();
+ check('Xero matching catalog excludes sensitive employee data',status.body.catalog.employees[0].name==='Synthetic Worker'&&!JSON.stringify(status.body).includes('must-not-be-stored'),{});
+ sql.prepare("INSERT INTO payroll_config(owner,data,version,updated) VALUES(?,?,1,'test') ON CONFLICT(owner) DO UPDATE SET data=excluded.data").run('a',JSON.stringify({frequency:'weekly',anchor:'2026-10-01',employees:[{id:'employee-local',name:'Synthetic Worker',aliases:['Synthetic Worker']}]}));
+ check('Xero rejects forged employee mapping',(await post({action:'mapping',version:status.body.version,mapping:{employees:{'employee-local':'foreign'}}})).status===400,{});
+ check('Xero saves company mapping',(await post({action:'mapping',version:status.body.version,mapping:{employees:{'employee-local':employee},rates:{ordinary:rate},calendar}})).status===200,{});
+ status=await get();check('Xero mapping reloads',status.body.mapping.employees['employee-local']===employee&&status.body.mapping.calendar===calendar,{});
+ const tokens=JSON.parse(await openXero(sql.prepare('SELECT tokens FROM xero_connections WHERE owner=?').get('a').tokens,'a'));tokens.expires_at=0;sql.prepare('UPDATE xero_connections SET tokens=? WHERE owner=?').run(await sealXero(JSON.stringify(tokens),'a'),'a');
+ check('Xero rotates expired access token',(await post({action:'refresh',version:status.body.version})).status===200&&refreshes===1,{});
+ identity('b');check('Xero other company sees no connection',!(await get()).body.authorised,{});begun=await post({action:'connect'});state=new URL(begun.body.url).searchParams.get('state')!;await done(state);status=await get();check('Xero prevents linking one organisation to two companies',(await post({action:'select',tenantId:tenant,version:status.body.version})).status===400,{});
+ identity('a');begun=await post({action:'connect'});state=new URL(begun.body.url).searchParams.get('state')!;status=await get();check('Xero disconnect succeeds',(await post({action:'disconnect',version:status.body.version})).status===200,{});check('Xero disconnect clears local credentials and matches',!(await get()).body.authorised&&sql.prepare('SELECT tokens,mapping FROM xero_connections WHERE owner=?').get('a').tokens==='',{});check('Xero disconnect invalidates pending callback',(await done(state)).headers.get('location')?.endsWith('xero=failed'),{});
+ begun=await post({action:'connect'});state=new URL(begun.body.url).searchParams.get('state')!;sql.prepare('UPDATE xero_oauth_states SET expires=0 WHERE owner=?').run('a');check('Xero expired state rejected',(await done(state)).headers.get('location')?.endsWith('xero=failed'),{});
+ check('Xero cancellation returns useful result',(await callback.GET(request('/api/xero/callback?error=access_denied'))).headers.get('location')?.endsWith('xero=cancelled'),{});
+ check('Xero never calls payroll write endpoints',calls.every(u=>!u.includes('Timesheets')&&!u.includes('PayRuns')),{});
+ }finally{globalThis.fetch=fetchBefore;(globalThis as any).__testHeaders=headersBefore;for(const key of ['XERO_CLIENT_ID','XERO_CLIENT_SECRET','XERO_REDIRECT_URI','XERO_TOKEN_ENCRYPTION_KEY'])delete env[key];}
+}

@@ -95,6 +95,15 @@ check('unassigned timesheet save denied',(await register.POST(req('/api/workspac
 check('unassigned schedule delete denied',(await schedule.POST(req('/api/schedule',{action:'delete',id:'shift-a2',version:1}))).status===404,{});
 check('unassigned schedule copy denied',(await schedule.POST(req('/api/schedule',{action:'copy',id:'shift-a2',version:1,dates:['2026-10-02']}))).status===404,{});
 const shiftEntry={workerKey:'member:ae',projectId:'a2',kind:'work',date:'2026-10-01',start:'08:00',end:'16:00',breakMinutes:0,notes:'',role:'',leaveType:''};check('unassigned schedule save denied',(await schedule.POST(req('/api/schedule',{action:'save',entry:shiftEntry}))).status===400,{});
+identity('aa');
+for(const [kind,leaveType] of [['office',''],['leave','RDO'],['leave','Unpaid Leave']]){
+ const saved=await schedule.POST(req('/api/schedule',{action:'save',entry:{...shiftEntry,projectId:'',kind,leaveType}}));
+ const list=await json(await schedule.GET(req('/api/schedule?week=2026-10-01')));
+ const row=list.body.entries.find((e:any)=>e.kind===kind&&e.leaveType===leaveType&&e.workerKey==='member:ae');
+ check('schedule saves and reloads '+(leaveType||'Office'),saved.status===200&&!!row&&row.projectId===''&&(kind==='office'?row.start==='08:00'&&row.end==='16:00':row.start===''&&row.end===''),{});
+}
+identity('ae');
+check('member cannot schedule another worker in office',(await schedule.POST(req('/api/schedule',{action:'save',entry:{...shiftEntry,kind:'office',workerKey:'member:aa',projectId:''}}))).status===403,{});
 const taskList=await json(await tasks.GET(req('/api/tasks')));check('task picker/assets scoped',taskList.body.projects.every((p:any)=>p.id==='a1')&&taskList.body.assets.every((f:any)=>f.projectId==='a1'),{});
 const dv=await json(await daily.GET(req('/api/daily-review?date=2026-10-01')));check('daily review list scoped',dv.status===200&&dv.body.projects.every((p:any)=>p.id==='a1')&&dv.body.items.every((i:any)=>i.projectId==='a1'),{status:dv.status});
 const dr=await daily.GET(req('/api/daily-review?date=2026-10-01&project=a2'));check('daily review unassigned filter denied',dr.status===404,{status:dr.status});
@@ -147,7 +156,9 @@ const authRoutes=await import('../app/api/auth/[...all]/route');
 const onboarding=await import('../app/api/onboarding/route');
 const e=(globalThis as any).__testEnv;
 await (await import('./v58-checks')).v58Checks({sql,objects,check,req,json});
+await (await import('../scripts/integration-checks')).integrationChecks({sql,check,identity});
 e.PLANFLO_AUTH_MODE='standalone';e.PLANFLO_DEPLOYMENT='test';
+e.TURNSTILE_SITE_KEY='synthetic-site';e.TURNSTILE_SECRET_KEY='synthetic-secret';const originalVerificationFetch=globalThis.fetch;globalThis.fetch=async(input:any,init?:any)=>String(input)==='https://challenges.cloudflare.com/turnstile/v0/siteverify'?Response.json({success:JSON.parse(init.body).response==='synthetic-human',hostname:'auth.example.test',action:'signup'}):originalVerificationFetch(input,init);
 identity('rob');check('standalone ignores forged Sites owner headers',await auth.getChatGPTUser()===null,{});
 e.PLANFLO_AUTH_ORIGIN='https://auth.example.test';e.BETTER_AUTH_SECRET='synthetic-test-secret-never-use-in-production-2026';
 const mailbox:{to:string;purpose:string;url:string}[]=[];
@@ -155,7 +166,7 @@ const testMailWorker=createMailWorker({fetch:async()=>Response.json({id:'synthet
 e.AUTH_EMAIL={fetch:async(r:Request)=>{const mail=await r.clone().json() as any;const response=await testMailWorker.fetch(r,{AUTH_EMAIL_PROVIDER:'resend',AUTH_EMAIL_FROM:'auth@example.test',RESEND_API_KEY:'re_synthetic_test_only',PLANFLO_AUTH_ORIGIN:e.PLANFLO_AUTH_ORIGIN});if(response.ok)mailbox.push(mail);return response;}};
 let ip=1;
 function authRequest(path:string,body?:unknown,cookie='',origin='https://auth.example.test'){
- if(path==='sign-up/email'&&body&&typeof body==='object')body={firstName:'Synthetic',surname:'Customer',businessName:'Synthetic Electrical',abn:'10 000 000 000',address:'1 Test Street, Testville',phone:'+61 400 000 000',rec:'TEST-REC-001',...body};
+ if(path==='sign-up/email'&&body&&typeof body==='object')body={'cf-turnstile-response':'synthetic-human',firstName:'Synthetic',surname:'Customer',businessName:'Synthetic Electrical',abn:'10 000 000 000',address:'1 Test Street, Testville',phone:'+61 400 000 000',rec:'TEST-REC-001',...body};
  return new Request('https://auth.example.test/api/auth/'+path,{method:body===undefined?'GET':'POST',headers:{origin,'content-type':'application/json','cf-connecting-ip':`192.0.2.${ip}`,cookie},body:body===undefined?undefined:JSON.stringify(body)});
 }
 async function ar(path:string,body?:unknown,cookie='',origin='https://auth.example.test'){return (body===undefined?authRoutes.GET:authRoutes.POST)(authRequest(path,body,cookie,origin))}
@@ -228,8 +239,8 @@ const storedRegistration=sql.prepare('SELECT first_name,surname,business_name,ab
 check('signup profile persists normalized fields',storedRegistration.first_name==='Synthetic'&&storedRegistration.surname==='Customer'&&storedRegistration.abn==='10000000000'&&storedRegistration.rec==='TEST-REC-001',{});
 const companyProfileRow=sql.prepare('SELECT company,abn,address,phone,rec,email FROM settings WHERE owner=?').get(customer!.userId)!;
 check('verified onboarding copies company draft exactly once',companyProfileRow.company==='Synthetic Customer Ltd'&&companyProfileRow.abn==='10000000000'&&companyProfileRow.rec==='TEST-REC-001'&&companyProfileRow.email===email,{});
-const invalidSignup=async(overrides:Record<string,unknown>)=>authRoutes.POST(new Request('https://auth.example.test/api/auth/sign-up/email',{method:'POST',headers:{origin:'https://auth.example.test','content-type':'application/json','cf-connecting-ip':'192.0.2.150'},body:JSON.stringify({firstName:'Validation',surname:'Fixture',businessName:'Validation Ltd',abn:'10000000000',address:'1 Test Street',phone:'0400000000',rec:'TEST-REC',email:'invalid-profile@example.test',password,...overrides})}));
-for(const [name,overrides] of Object.entries({missingName:{firstName:''},missingSurname:{surname:''},missingBusiness:{businessName:''},badAbn:{abn:'10000000001'},missingAddress:{address:''},badPhone:{phone:'invalid'},missingRec:{rec:''},tooLongName:{firstName:'x'.repeat(81)}})){const response=await invalidSignup(overrides);check('registration rejects '+name,response.status===400,{});}
+const invalidSignup=async(overrides:Record<string,unknown>)=>authRoutes.POST(new Request('https://auth.example.test/api/auth/sign-up/email',{method:'POST',headers:{origin:'https://auth.example.test','content-type':'application/json','cf-connecting-ip':'192.0.2.150'},body:JSON.stringify({'cf-turnstile-response':'synthetic-human',firstName:'Validation',surname:'Fixture',businessName:'Validation Ltd',abn:'10000000000',address:'1 Test Street',phone:'0400000000',rec:'TEST-REC',email:'invalid-profile@example.test',password,...overrides})}));
+for(const [name,overrides] of Object.entries({missingName:{firstName:''},missingBusiness:{businessName:''},badAbn:{abn:'10000000001'},missingPhone:{phone:''},badPhone:{phone:'invalid'},missingRec:{rec:''},tooLongName:{firstName:'x'.repeat(161)}})){const response=await invalidSignup(overrides);check('registration rejects '+name,response.status===400,{});}
 check('invalid registration creates no identity or company',!sql.prepare('SELECT id FROM auth_user WHERE email=?').get('invalid-profile@example.test'),{});
 const priorMail=mailbox.length;ip++;const joinRegistration=await invalidSignup({email:'minimal-invite@example.test',signupIntent:'join',businessName:'',abn:'',address:'',rec:''});check('invited signup accepts personal details without new business',joinRegistration.status===200&&mailbox.length===priorMail+1,{});
 await authRoutes.GET(new Request(mailbox.findLast(m=>m.to==='minimal-invite@example.test')!.url));const minimalLogin=await ar('sign-in/email',{email:'minimal-invite@example.test',password});setSession(minimalLogin.headers.get('set-cookie')?.split(';')[0]||'');
@@ -238,6 +249,20 @@ const minimalUser=await auth.getChatGPTUser();check('join intent grants no works
 check('invited member draft never replaces company settings',!sql.prepare('SELECT owner FROM settings WHERE owner=?').get(staffAuth!.userId),{});
 ip++;const repeatRegistration=await ar('sign-up/email',{email,password,firstName:'Changed',surname:'Attacker',businessName:'Changed company'});check('repeat signup remains generic and cannot replace verified profile',repeatRegistration.status===200&&sql.prepare('SELECT first_name FROM auth_user WHERE email=?').get(email)?.first_name==='Synthetic',{});
 const privateSession=await runtime.customerAuth().api.getSession({headers:(globalThis as any).__testHeaders});check('session response does not expose business draft fields',!!privateSession&&!('abn' in privateSession.user)&&!('phone' in privateSession.user)&&!('rec' in privateSession.user),{});
+
+check('signup rejects missing human token',(await ar('sign-up/email',{email:'bot@example.test',password,'cf-turnstile-response':''})).status===400,{});
+check('signup rejects forged human token',(await ar('sign-up/email',{email:'bot@example.test',password,'cf-turnstile-response':'forged'})).status===400,{});
+
+const verifyHuman=(await import('../app/signup-verification')).verifySignup;
+const humanRequest=new Request('https://auth.example.test/api/auth/sign-up/email');
+for(const [label,result] of Object.entries({expired:{success:false,'error-codes':['timeout-or-duplicate']},wrongHost:{success:true,hostname:'attacker.example',action:'signup'},wrongAction:{success:true,hostname:'auth.example.test',action:'login'}})){
+ globalThis.fetch=async()=>Response.json(result);check('human verification rejects '+label,!await verifyHuman('synthetic-human',humanRequest),{});
+}
+globalThis.fetch=async()=>{throw new Error('Synthetic outage')};check('human verification provider outage fails closed',!await verifyHuman('synthetic-human',humanRequest),{});
+const savedHumanSecret=e.TURNSTILE_SECRET_KEY;delete e.TURNSTILE_SECRET_KEY;check('unconfigured human verification fails closed',!await verifyHuman('synthetic-human',humanRequest),{});e.TURNSTILE_SECRET_KEY=savedHumanSecret;
+const simpleProfile=registration.registrationProfile({fullName:'Rob Example',businessName:'Example Electrical',rec:'REC-123',phone:'0400000000'});check('simple signup accepts one full name and required phone',simpleProfile.firstName==='Rob Example'&&simpleProfile.phone==='0400000000'&&simpleProfile.abn===''&&simpleProfile.address==='',{});
+globalThis.fetch=originalVerificationFetch;
+
 writeFileSync(out+'/results.json',JSON.stringify({baseline:'2fa2b4ec0a8c66d4cec2a66de6db185d0388b3d6',integrationParents:['0ea88f753f23dd8a2422d202e48b2a3f6808f24f','074c21e97abcb9976a81b3a8550c48af5daae590'],isolation:{database:'in-memory SQLite with real migrations',objects:'in-memory synthetic R2 adapter',identity:'explicit Sites fixture plus real Better Auth cookie sessions and auth email Worker with synthetic provider transport',network:'global fetch throws',productionSecrets:'none loaded'},results},null,2));console.log(JSON.stringify({passed:results.filter(r=>r.result==='PASS').length,failed:results.filter(r=>r.result==='FAIL').length}));
 
 process.exitCode=results.some(r=>r.result==='FAIL')?1:0;
