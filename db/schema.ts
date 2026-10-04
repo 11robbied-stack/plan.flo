@@ -78,3 +78,6 @@ export const xeroConnections=sqliteTable('xero_connections',{
 export const xeroOauthStates=sqliteTable('xero_oauth_states',{
  stateHash:text('state_hash').primaryKey(),owner:text('owner').notNull(),userId:text('user_id').notNull(),verifier:text('verifier').notNull(),expires:integer('expires').notNull()
 });
+export const dashboardLayouts=sqliteTable('dashboard_layouts',{
+ owner:text('owner').notNull(),userId:text('user_id').notNull(),data:text('data').notNull().default('{}'),version:integer('version').notNull().default(1),updated:text('updated').notNull()
+},t=>[uniqueIndex('idx_dashboard_layout_user_company').on(t.owner,t.userId)]);

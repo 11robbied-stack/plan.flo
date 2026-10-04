@@ -21,7 +21,12 @@ console.log('0026 → 0027 preserves every existing table/column value, includin
 // Preserve the already-integrated invoice/auth data when adding connection storage.
 db.exec("INSERT INTO gmail_connections(owner,email,refresh_token,updated) VALUES('auth:fixture','fixture@example.test','synthetic-encrypted-token','fixture')");
 const integrated=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all().map(r=>({name:r.name,rows:db.prepare(`SELECT * FROM "${r.name}"`).all()}));
-for(const f of readdirSync('drizzle').filter(f=>f.endsWith('.sql')&&Number(f.slice(0,4))>27).sort())db.exec(readFileSync('drizzle/'+f,'utf8'));
+for(const f of readdirSync('drizzle').filter(f=>f.endsWith('.sql')&&Number(f.slice(0,4))>27).sort()){
+ const prior=db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all().map(r=>({name:r.name,rows:db.prepare(`SELECT * FROM "${r.name}"`).all()}));
+ db.exec(readFileSync('drizzle/'+f,'utf8'));
+ for(const {name,rows} of prior)assert.deepEqual(db.prepare(`SELECT * FROM "${name}"`).all(),rows,f+' changed '+name);
+ if(f.startsWith('0029')){assert.equal(db.prepare('SELECT COUNT(*) AS n FROM dashboard_layouts').get().n,0);console.log('0028 → 0029 preserves all existing tables and adds empty per-user/company layout storage.');}
+}
 for(const {name,rows} of integrated)assert.deepEqual(db.prepare(`SELECT * FROM "${name}"`).all(),rows,name+' integrated data changed');
 assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(),[]);
 console.log('0027 → latest preserves existing integrated data and Gmail connections.');

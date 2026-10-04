@@ -1,3 +1,4 @@
+import {checkDashboardEditor} from '../scripts/dashboard-editor-browser-checks.mjs';
 import {checkNavigationStates,checkTimeHeader,checkDashboardAccents} from '../scripts/navigation-browser-checks.mjs';
 import {checkIntegrationSetup} from '../scripts/integration-browser-checks.mjs';
 import {checkDrawingTools} from '../scripts/drawing-browser-checks.mjs';
@@ -117,9 +118,10 @@ try{
 
  await checkTimeHeader(page,check);
  await checkIntegrationSetup(page,check,origin);
- await page.setViewportSize({width:1440,height:1000});await page.goto(origin+'/');await page.getByRole('button',{name:'PLAN.FLO dashboard',exact:true}).click();await page.locator('.pf-insights').waitFor();
+ await page.setViewportSize({width:1440,height:1000});await page.goto(origin+'/');await page.getByRole('button',{name:'PLAN.FLO dashboard',exact:true}).click();await page.locator('.pf-insights').first().waitFor();
  await checkDashboardAccents(page,check);
- check('Clear Overview dashboard uses real project insights',await page.locator('.pf-insights').innerText().then(t=>t.includes('Contract portfolio')&&t.includes('Project activity')));
+ await checkDashboardEditor(page,check);
+ check('Clear Overview dashboard uses real project insights',await page.locator('.pf-insights').allTextContents().then(parts=>parts.join(' ')).then(t=>t.includes('Contract portfolio')&&t.includes('Project activity')));
  check('Clear Overview navigation is a white surface',await page.locator('.sidebar').evaluate(el=>getComputedStyle(el).backgroundColor==='rgb(255, 255, 255)'));
  await page.screenshot({path:'test-audit/browser-artifacts/clear-overview-desktop.png',fullPage:true});
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(350);check('Clear Overview dashboard fits mobile',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));check('mobile insight cards fit viewport',await page.locator('.pf-insight').evaluateAll(els=>els.every(el=>el.getBoundingClientRect().right<=innerWidth)));check('mobile navigation collapses off canvas',await page.locator('.sidebar').evaluate(el=>el.getBoundingClientRect().right<=1));await page.screenshot({path:'test-audit/browser-artifacts/clear-overview-mobile.png',fullPage:true});

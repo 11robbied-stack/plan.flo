@@ -204,6 +204,13 @@
       "when": 1791066314740,
       "tag": "0028_xero_connections",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "6",
+      "when": 1791078475844,
+      "tag": "0029_dashboard_layouts",
+      "breakpoints": true
     }
   ]
 }
