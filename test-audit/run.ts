@@ -158,6 +158,7 @@ const e=(globalThis as any).__testEnv;
 await (await import('./v58-checks')).v58Checks({sql,objects,check,req,json});
 await (await import('../scripts/integration-checks')).integrationChecks({sql,check,identity});
 await (await import('../scripts/dashboard-layout-checks')).dashboardLayoutChecks({sql,check,identity,req});
+await (await import('../scripts/demo-checks')).demoChecks({sql,check,identity,req});
 e.PLANFLO_AUTH_MODE='standalone';e.PLANFLO_DEPLOYMENT='test';
 e.TURNSTILE_SITE_KEY='synthetic-site';e.TURNSTILE_SECRET_KEY='synthetic-secret';const originalVerificationFetch=globalThis.fetch;globalThis.fetch=async(input:any,init?:any)=>String(input)==='https://challenges.cloudflare.com/turnstile/v0/siteverify'?Response.json({success:JSON.parse(init.body).response==='synthetic-human',hostname:'auth.example.test',action:'signup'}):originalVerificationFetch(input,init);
 identity('rob');check('standalone ignores forged Sites owner headers',await auth.getChatGPTUser()===null,{});
