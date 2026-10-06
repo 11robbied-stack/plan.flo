@@ -1,3 +1,5 @@
+import {checkProjectSidebar} from '../scripts/project-sidebar-browser-checks.mjs';
+import {checkMondayPalette,checkMondaySystem} from '../scripts/monday-browser-checks.mjs';
 import {checkPrivateDemo} from '../scripts/demo-browser-checks.mjs';
 import {checkStageProgress} from '../scripts/stage-progress-browser-checks.mjs';
 import {checkDashboardEditor} from '../scripts/dashboard-editor-browser-checks.mjs';
@@ -66,6 +68,7 @@ try{
  check('staff cannot self-promote or invite',(await api(staff.p,'/api/company',{action:'add',email:'rogue@example.test',name:'Rogue',role:'admin'})).status===403);
  check('staff cannot access platform admin',(await api(staff.p,'/api/admin')).status===403);
  check('staff cannot read other project records',(await api(staff.p,'/api/data?project='+other.body.id)).body.records.length===0);
+ await checkProjectSidebar({page,staff:staff.p,other:userB.p,origin,projectId:projectA.id,secondId:other.body.id,check});
  await api(page,'/api/company',{action:'disable',id:member.id});check('staff disable blocks already signed-in browser',(await api(staff.p,'/api/data')).status===403);
  // Seed a synthetic verified platform-owner identity only in this disposable DB.
  const {hashPassword}=await import('better-auth/crypto');const hash=await hashPassword('Synthetic Rob Password 42!');const now=Date.now();
@@ -94,7 +97,7 @@ try{
  await page.getByRole('button',{name:'Next page',exact:true}).click();await page.locator('.drawing-pdf-canvas[data-render-status=ready]').waitFor();
  check('multipage PDF navigation renders distinct page',(await page.locator('.drawing-pdf-canvas').evaluate(c=>c.toDataURL()))!==firstPreview&&await page.getByText('Page 2 of 2',{exact:true}).isVisible());
  await page.getByRole('button',{name:'Previous page',exact:true}).click();await page.locator('.drawing-pdf-canvas[data-render-status=ready]').waitFor();
- await page.getByRole('button',{name:'Line',exact:true}).click();const box=await page.locator('.drawing-surface').boundingBox();await page.mouse.move(box.x+120,box.y+120);await page.mouse.down();await page.mouse.move(box.x+240,box.y+180);await page.mouse.up();await page.locator('[data-markup]').waitFor();
+ await page.getByRole('button',{name:'Line',exact:true}).click();await page.locator('.drawing-surface').scrollIntoViewIfNeeded();const box=await page.locator('.drawing-surface').boundingBox();await page.mouse.move(box.x+120,box.y+120);await page.mouse.down();await page.mouse.move(box.x+240,box.y+180);await page.mouse.up();await page.locator('[data-markup]').waitFor();
  check('PDF markup saves on visible page',true);await page.getByRole('button',{name:'Next page',exact:true}).click();await page.locator('.drawing-pdf-canvas[data-render-status=ready]').waitFor();check('page-one markup hidden on page two',await page.locator('[data-markup]').count()===0);
  await page.getByRole('button',{name:'Previous page',exact:true}).click();await page.locator('[data-markup]').waitFor();check('page-one markup restored on return',true);
  await checkDrawingTools(page,check,api,projectA.id);
@@ -113,6 +116,7 @@ try{
  const logo=await page.evaluate(async()=>{const bytes=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aH1cAAAAASUVORK5CYII='),c=>c.charCodeAt(0));const f=new FormData();f.set('projectId','');f.set('category','logo');f.set('file',new File([bytes],'synthetic-logo.png',{type:'image/png'}));const r=await fetch('/api/upload',{method:'POST',body:f});return {status:r.status,body:await r.json()}});
  check('synthetic company logo uploads',logo.status===200);const logoSettings=(await api(page,'/api/data')).body.settings;check('company logo settings save',(await api(page,'/api/data',{action:'settings',...logoSettings,logoFileId:logo.body.id})).status===200);
  await page.reload();await page.locator('.company-header-logo img').waitFor();await page.waitForFunction(()=>{const i=document.querySelector('.company-header-logo img');return i?.complete&&i.naturalWidth>0});check('company header renders authenticated logo',true);
+ if(await page.getByRole('button',{name:'Back to workspace',exact:true}).count())await page.getByRole('button',{name:'Back to workspace',exact:true}).click();
  await page.getByRole('button',{name:'Projects',exact:true}).first().click();await page.getByText('Browser Project A1',{exact:true}).first().click();
  await page.getByRole('button',{name:'Purchase Orders',exact:true}).click();await page.getByRole('button',{name:'New purchase order',exact:true}).click();
  check('new PO blocks save without Project Setup reference',await page.getByRole('dialog').getByRole('button',{name:'Save',exact:true}).isDisabled()&&await page.getByRole('dialog').getByRole('button',{name:'Open Project Setup',exact:true}).isVisible());
@@ -122,13 +126,15 @@ try{
  await poDialog.getByLabel('Supplier',{exact:true}).fill('Synthetic supplier');await poDialog.getByLabel('Description',{exact:true}).fill('Synthetic cable');await poDialog.getByLabel('Unit price ($)',{exact:true}).fill('12.50');await poDialog.getByRole('button',{name:'Save',exact:true}).click();await poDialog.waitFor({state:'hidden'});
  check('PO appears in project register',await page.getByText('PO-BROWSER-001',{exact:true}).count()>0);await page.screenshot({path:'test-audit/browser-artifacts/v58-purchase-order.png',fullPage:true});
  await page.getByRole('button',{name:'Costs',exact:true}).click();await page.getByText('Supplier invoice review',{exact:false}).first().waitFor();check('Costs renders supplier invoice review',true);
+ await checkMondayPalette(page,check);
  await checkNavigationStates(page,check);
- await page.getByRole('button',{name:'Schedule',exact:true}).first().click();await page.waitForTimeout(400);check('workspace schedule screen renders',(await page.locator('body').innerText()).includes('Schedule'));
+ await page.getByRole('button',{name:'Back to workspace',exact:true}).click();await page.getByRole('button',{name:'Schedule',exact:true}).first().click();await page.waitForTimeout(400);check('workspace schedule screen renders',(await page.locator('body').innerText()).includes('Schedule'));
  await page.getByRole('button',{name:'Time Sheets',exact:true}).first().click();await page.waitForTimeout(400);check('workspace timesheets screen renders',(await page.locator('body').innerText()).includes('Time Sheets'));
 
  await checkTimeHeader(page,check);
  await checkIntegrationSetup(page,check,origin);
  await page.setViewportSize({width:1440,height:1000});await page.goto(origin+'/');await page.getByRole('button',{name:'PLAN.FLO dashboard',exact:true}).click();await page.locator('.pf-insights').first().waitFor();
+ await checkMondaySystem(page,check);
  await checkDashboardAccents(page,check);
  await checkDashboardEditor(page,check);
  check('Clear Overview dashboard uses real project insights',await page.locator('.pf-insights').allTextContents().then(parts=>parts.join(' ')).then(t=>t.includes('Contract portfolio')&&t.includes('Project activity')));

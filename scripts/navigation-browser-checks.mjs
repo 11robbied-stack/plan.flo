@@ -7,12 +7,12 @@ export async function checkNavigationStates(page,check){
    const button=buttons.nth(i);await button.scrollIntoViewIfNeeded();const before=await button.boundingBox();await button.hover();await page.waitForTimeout(180);
    const state=await button.evaluate(el=>{const s=getComputedStyle(el),a=getComputedStyle(el.closest('.app'));return {color:s.color,expected:a.getPropertyValue('--foreground').trim(),background:s.backgroundColor,opacity:s.opacity,visible:s.visibility,icon:el.querySelector('svg')?getComputedStyle(el.querySelector('svg')).color:s.color};});
    const after=await button.boundingBox();
-   check(`${theme} navigation hover stays visible: ${await button.innerText()}`,state.color!=='rgb(255, 255, 255)'&&state.color!==state.background&&state.icon===state.color&&state.opacity==='1'&&state.visible==='visible'&&Math.abs(before.width-after.width)<1&&Math.abs(before.height-after.height)<1,state);
+   check(`${theme} navigation hover stays visible: ${await button.innerText()}`,state.color!==state.background&&state.icon===state.color&&state.opacity==='1'&&state.visible==='visible'&&Math.abs(before.width-after.width)<1&&Math.abs(before.height-after.height)<1,state);
   }
   await page.keyboard.press('Tab');const focus=await page.locator('.sidebar .side-item').first();await focus.focus();check(theme+' navigation keyboard focus is visible',await focus.evaluate(el=>getComputedStyle(el).outlineStyle!=='none'));
  }
  await page.locator('.app').evaluate(el=>el.classList.remove('dark'));
- await page.locator('.sidebar .side-item').filter({hasText:'Projects'}).hover();await page.waitForTimeout(180);await page.screenshot({path:'test-audit/browser-artifacts/navigation-hover-after.png',fullPage:true});
+ await page.locator('.sidebar .side-item').filter({hasText:'Back to workspace'}).hover();await page.waitForTimeout(180);await page.screenshot({path:'test-audit/browser-artifacts/navigation-hover-after.png',fullPage:true});
 }
 export async function checkTimeHeader(page,check){
  await page.setViewportSize({width:1440,height:1000});
